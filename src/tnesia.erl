@@ -1,6 +1,10 @@
 -module(tnesia).
 
--export([write/2]).
+-export([
+	 write/2,
+	 read/2,
+	 remove/2
+	]).
 
 -include("tnesia.hrl").
 
@@ -11,16 +15,22 @@
 %%--------------------------------------------------------------------
 %% write
 %%--------------------------------------------------------------------
-write(Timeline, Value) ->
-    tnesia_lib:write(#tnesia_input{
-			id = Timeline,
-			timestamp = now(),
-			record = Value}).
-    
+write(Timeline, Record) ->
+    Timepoint = tnesia_lib:write(
+	      #tnesia_input{
+		 timeline = Timeline,
+		 timepoint = now(),
+		 record = Record}),
+    {Timeline, Timepoint}.
+
 %%--------------------------------------------------------------------
 %% read
 %%--------------------------------------------------------------------
+read(Timeline, Timepoint) ->
+    tnesia_lib:read_timepoint(Timeline, Timepoint).
 
 %%--------------------------------------------------------------------
 %% remove
 %%--------------------------------------------------------------------
+remove(Timeline, Timepoint) ->
+    tnesia_lib:remove_timepoint(Timeline, Timepoint).
