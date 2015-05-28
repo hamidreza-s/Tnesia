@@ -1,4 +1,4 @@
--module(tnesia).
+-module(tnesia_api).
 
 -export([
 	 write/2,
