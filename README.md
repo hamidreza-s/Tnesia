@@ -53,10 +53,8 @@ timeline  + timepoint # 07   timestep # 2      - timestep:
 * Timepoints, as index, are stored on RAM to faster lookup.
 * Data values are stored on Disk to have more room for storage.
 * All seeks are **key-value**.
-* Timestep percision is configurable depends on the timepoints frequency.
+* Timestep precision is configurable depends on the timepoints frequency.
 
 API
 -----
-
-...
 

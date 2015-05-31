@@ -8,7 +8,7 @@
 
 -export([
 	 table_info/0,
-         table_cleanup_if/4,
+         table_cleanup/4,
          remove_record/2,
          remove_record/1,
 	 seed_sample_data/2
@@ -18,22 +18,42 @@
 	 write/1,
          read_timepoint/2,
          read_count/1,
-         read_count_if/2,
-         read_count_do/2,
+         read_count_call/2,
+         read_count_cast/2,
          read_since/1,
-         read_since_if/2,
-         read_since_do/2,
+         read_since_call/2,
+         read_since_cast/2,
          read_since_till/1,
-         read_since_till_if/2,
-         read_since_till_do/2,
-         read_range_days_if/4,
-         read_range_days_do/4,
-	 remove_timepoint/2
+         read_since_till_call/2,
+         read_since_till_cast/2,
+         read_range_days_call/4,
+         read_range_days_cast/4,
+	 remove_timepoint/2,
+	 init_read_since_till/2
+	]).
+
+-export([
+	 get_timestamp/1,
+	 get_micro_timestamp/1,
+	 get_micro_timestep/1
+	]).
+
+-export([
+	 default_timeline/0,
+	 default_since/0,
+	 default_till/0,
+	 default_order/0,
+	 default_limit/0
 	]).
 
 -define(TIME_COUNT_LIMIT_SEC, 3600 * 24 * 30).
 -define(ITEM_COUNT_LIMIT_REC, 50).
 -define(TIME_STEP_PERCISION_SEC, 60 * 60 * 24).
+
+-define(DEFAULT_TIMELINE, "default-timeline").
+-define(DEFAULT_ORDER, des).
+-define(DEFAULT_LIMIT, 50).
+-define(DEFAULT_SINCE, 1000000 * 3600 * 24 * 30).
 
 -include("tnesia.hrl").
 
@@ -132,10 +152,10 @@ table_info() ->
     [{tnesia_base, BaseSize}, {tnesia_bag, BagSize}].
 
 %%--------------------------------------------------------------------
-%% table_cleanup_if
+%% table_cleanup
 %%--------------------------------------------------------------------
-table_cleanup_if(BagKey, Since, Till, Fun) ->
-    read_range_days_do(
+table_cleanup(BagKey, Since, Till, Fun) ->
+    read_range_days_cast(
       BagKey,
       Since,
       Till,
@@ -226,16 +246,16 @@ read_timepoint(Timeline, Timepoint) ->
 %% read_count
 %%--------------------------------------------------------------------
 read_count(Query) ->
-    read_count_if(Query, fun(_Val, _Limit) -> true end).
+    read_count_call(Query, fun(_Val, _Limit) -> true end).
 
 %%--------------------------------------------------------------------
-%% read_count_if
+%% read_count_call
 %%--------------------------------------------------------------------
-read_count_if(Query, Fun) ->
+read_count_call(Query, Fun) ->
     Now = now(),
     TimepointFrom = get_micro_timestamp_count_limit(Now),
     TimepointTo = get_micro_timestamp(Now),
-    read_since_till_if(
+    read_since_till_call(
       Query#tnesia_query{
 	from = TimepointFrom, 
 	to = TimepointTo
@@ -244,13 +264,13 @@ read_count_if(Query, Fun) ->
      ).
 
 %%--------------------------------------------------------------------
-%% read_count_do
+%% read_count_cast
 %%--------------------------------------------------------------------
-read_count_do(Query, Fun) ->
+read_count_cast(Query, Fun) ->
     Now = now(),
     TimepointFrom = get_micro_timestamp_count_limit(Now),
     TimepointTo = get_micro_timestamp(Now),
-    read_since_till_do(
+    read_since_till_cast(
       Query#tnesia_query{
 	from = TimepointFrom, 
 	to = TimepointTo
@@ -262,50 +282,50 @@ read_count_do(Query, Fun) ->
 %% read_since
 %%--------------------------------------------------------------------
 read_since(Query) ->
-    read_since_if(Query, fun(_Val, _Limit) -> true end).
+    read_since_call(Query, fun(_Val, _Limit) -> true end).
 
 %%--------------------------------------------------------------------
-%% read_since_if
+%% read_since_call
 %%--------------------------------------------------------------------
-read_since_if(Query, Fun) ->
+read_since_call(Query, Fun) ->
     TimepointTo = get_micro_timestamp(now()),
-    read_since_till_if(Query#tnesia_query{to = TimepointTo}, Fun).
+    read_since_till_call(Query#tnesia_query{to = TimepointTo}, Fun).
 
 %%--------------------------------------------------------------------
-%% read_since_do
+%% read_since_cast
 %%--------------------------------------------------------------------
-read_since_do(Query, Fun) ->
+read_since_cast(Query, Fun) ->
     TimepointTo = get_micro_timestamp(now()),
-    read_since_till_do(Query#tnesia_query{to = TimepointTo}, Fun).
+    read_since_till_cast(Query#tnesia_query{to = TimepointTo}, Fun).
 
 %%--------------------------------------------------------------------
 %% read_since_till
 %%--------------------------------------------------------------------
 read_since_till(Query) ->
-    read_since_till_if(Query, fun(_Val, _Limit) -> true end).
+    read_since_till_call(Query, fun(_Val, _Limit) -> true end).
 
 %%--------------------------------------------------------------------
-%% read_since_till_if
+%% read_since_till_call
 %%--------------------------------------------------------------------
-read_since_till_if(Query, Fun) ->
+read_since_till_call(Query, Fun) ->
     init_read_since_till(Query#tnesia_query{return = true}, Fun).
 
 %%--------------------------------------------------------------------
-%% read_since_till_do
+%% read_since_till_cast
 %%--------------------------------------------------------------------
-read_since_till_do(Query, Fun) ->
+read_since_till_cast(Query, Fun) ->
     init_read_since_till(Query#tnesia_query{return = false}, Fun).
 
 %%--------------------------------------------------------------------
-%% read_range_days_if
+%% read_range_days_call
 %%--------------------------------------------------------------------
-read_range_days_if(Bag, Since, Till, Fun) ->
+read_range_days_call(Bag, Since, Till, Fun) ->
     init_read_range_days(Bag, Since, Till, true, Fun).
 
 %%--------------------------------------------------------------------
-%% read_range_days_do
+%% read_range_days_cast
 %%--------------------------------------------------------------------
-read_range_days_do(Bag, Since, Till, Fun) ->
+read_range_days_cast(Bag, Since, Till, Fun) ->
     init_read_range_days(Bag, Since, Till, false, Fun).
 
 %%--------------------------------------------------------------------
@@ -372,7 +392,7 @@ init_read_range_days(Bag, Since, Till, Return, Fun)
     NowMicro = get_micro_timestamp(Now),
     SinceMicro = NowMicro - (OneDayMicro * Since),
     TillMicro = NowMicro - (OneDayMicro * Till),
-    read_since_till_if(
+    read_since_till_call(
       #tnesia_query{
          bag = Bag, 
          from = SinceMicro, 
@@ -582,7 +602,13 @@ query_on_frags(Type, Fun) ->
 %%--------------------------------------------------------------------
 check_timestep_fault({BaseKeyTime, TimeStampFrom, TimeStampTo}) ->
     (BaseKeyTime >= TimeStampFrom) andalso (BaseKeyTime =< TimeStampTo).
-
+%%--------------------------------------------------------------------
+%% get_timestamp
+%%--------------------------------------------------------------------
+get_timestamp(TupleTime) ->
+    {Mega, Sec, _Micro} = TupleTime,
+    SecTimeStamp = (Mega * 1000000 + Sec),
+    SecTimeStamp.
 %%--------------------------------------------------------------------
 %% get_micro_timestamp
 %%--------------------------------------------------------------------
@@ -610,3 +636,36 @@ get_micro_timestep_precision() ->
 %%--------------------------------------------------------------------
 get_micro_timestamp_count_limit(TupleTime) ->
     get_micro_timestamp(TupleTime) - (?TIME_COUNT_LIMIT_SEC * 1000000).
+
+%%====================================================================
+%% Defaults
+%%====================================================================
+
+%%--------------------------------------------------------------------
+%% default_timeline
+%%--------------------------------------------------------------------
+default_timeline() ->
+    ?DEFAULT_TIMELINE.
+
+%%--------------------------------------------------------------------
+%% default_since
+%%--------------------------------------------------------------------
+default_since() ->
+    default_till() - ?DEFAULT_SINCE.
+%%--------------------------------------------------------------------
+%% default_till
+%%--------------------------------------------------------------------
+default_till() ->
+    get_micro_timestamp(now()).
+
+%%--------------------------------------------------------------------
+%% default_order
+%%--------------------------------------------------------------------
+default_order() ->
+    ?DEFAULT_ORDER.
+
+%%--------------------------------------------------------------------
+%% default_limit
+%%--------------------------------------------------------------------
+default_limit() ->
+    ?DEFAULT_LIMIT.
