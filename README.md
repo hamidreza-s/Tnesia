@@ -6,7 +6,7 @@ Tnesia is a time-series data storage based on Mnesia. You can run time-based que
 Goal and Theory
 -----
 The goal is to reduce disk seeks in order to find a time range of data values in a timeline, ascending or descending, and from or to any arbitrary points of time.
-There are few terms that can help you to understand how Tnesia stores and retrieve data, among them **Timeline**, **Timepoint** and **Timestep** are the main ones.
+There are few terms that can help you to understand how Tnesia stores and retrieves data, among them **Timeline**, **Timepoint** and **Timestep** are the main ones.
 
 
 ```

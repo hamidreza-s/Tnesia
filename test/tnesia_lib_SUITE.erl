@@ -1,6 +1,8 @@
 -module(tnesia_lib_SUITE).
 -include_lib("common_test/include/ct.hrl").
 
+-include("tnesia.hrl").
+
 -compile(export_all).
 
 %%====================================================================
@@ -30,9 +32,11 @@ all() ->
 %% init_per_suite | end_per_suite
 %%--------------------------------------------------------------------
 init_per_suite(Config) ->
+    application:start(tnesia),
     Config.
 
 end_per_suite(_Config) ->
+    application:stop(tnesia),
     ok.
 
 %%--------------------------------------------------------------------
@@ -47,10 +51,10 @@ end_per_group(_group, Config) ->
 %%--------------------------------------------------------------------
 %% init_per_testcase | end_per_testcase
 %%--------------------------------------------------------------------
-init_per_testcase(TestCase, Config) ->
+init_per_testcase(_TestCase, Config) ->
     Config.
 
-end_per_testcase(TestCase, Config) ->
+end_per_testcase(_TestCase, Config) ->
     Config.
 
 %%====================================================================
@@ -60,5 +64,37 @@ end_per_testcase(TestCase, Config) ->
 %%--------------------------------------------------------------------
 %% test_tnesia_lib
 %%--------------------------------------------------------------------
-test_tnesia_lib(Config) ->
-    {skip, "Will be implemented"}.
+test_tnesia_lib(_Config) ->
+
+    Timeline = "test-timeline",
+
+    T1 = tnesia_lib:get_micro_timestamp(now()),
+    timer:sleep(1000),
+    tnesia_api:write(Timeline, "test-record-1"),
+    timer:sleep(1000),
+    tnesia_api:write(Timeline, "test-record-2"),
+    timer:sleep(1000),
+    tnesia_api:write(Timeline, "test-record-3"),
+    timer:sleep(1000),
+    tnesia_api:write(Timeline, "test-record-4"),
+    timer:sleep(1000),
+    tnesia_api:write(Timeline, "test-record-5"),
+    T2 = tnesia_lib:get_micro_timestamp(now()),
+    
+    Result = tnesia_lib:init_read_since_till(
+	       #tnesia_query{
+		  bag = Timeline,
+		  from = T1,
+		  to = T2,
+		  limit = 100,
+		  order = des,
+		  return = true
+		 },
+	       fun(BaseRecord, BagRecord, Limit) ->
+		       {true, {BaseRecord, BagRecord, Limit}}
+	       end
+	      ),
+    
+    true = (length(Result) =:= 5),
+    
+    ok.
