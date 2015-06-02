@@ -8,3 +8,5 @@ Mnesia*
 erl_crash.dump
 .rebar
 .DS_Store
+\#*
+\.\#*

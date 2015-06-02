@@ -58,3 +58,64 @@ timeline  + timepoint # 07   timestep # 2      - timestep:
 API
 -----
 
+**Write**
+
+```erlang
+write(Timeline, Record) -> {Timeline, Timepoint}
+```
+
+**Read**
+
+```erlang
+tnesia_api:read(Timeline, Timepoint) -> Record
+```
+
+**Remove**
+
+```erlang
+tnesia_api:remove(Timeline, Timepoint) -> ok
+```
+
+**Query fetch**
+
+```erlang
+tnesia_api:query_fetch(Query) -> [Record]
+```
+
+**Query filtermap**
+
+```erlang
+tnesia_api:query_filtermap(Query, FiltermapFun) -> [Record]
+```
+
+**Query foreach**
+
+```erlang
+tnesia_api:query_foreach(Query, ForeachFun) -> ok
+```
+
+**Query raw**
+
+```erlang
+tnesia_api:query_raw(Query, Return, Fun) -> [Record] | ok
+```
+
+Types
+----
+
+```erlang
+Timeline = Record = any()
+Timepoint = integer()
+Query = [{timeline, Timeline},
+         {since, Since},
+         {till, Till},
+         {order, Order},
+         {limit, Limit}]
+Since = Till = integer()
+Order = asc | des
+Limit = integer()
+FiltermapFun = fun((RecordIndex, Record, Limit) -> {true, Record} | false)
+ForeachFun = fun((RecordIndex, Record, Limit) -> any())
+Fun = FiltermapFun | ForeachFun
+Return = true | false
+```
