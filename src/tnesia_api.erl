@@ -10,10 +10,6 @@
 	 query_raw/3
 	]).
 
--export([
-	 test/1
-	]).
-
 -include("tnesia.hrl").
 
 %%====================================================================
@@ -61,7 +57,8 @@ query_filtermap(Query, Fun) ->
 %% query_foreach
 %%--------------------------------------------------------------------
 query_foreach(Query, Fun) ->
-    query_raw(Query, false, Fun).
+    [] = query_raw(Query, false, Fun),
+    ok.
 
 %%--------------------------------------------------------------------
 %% query_raw

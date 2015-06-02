@@ -4,6 +4,7 @@ deps
 *.swp
 *~
 logs
+test/logs
 Mnesia*
 erl_crash.dump
 .rebar

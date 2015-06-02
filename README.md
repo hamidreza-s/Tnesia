@@ -61,7 +61,7 @@ API
 **Write**
 
 ```erlang
-write(Timeline, Record) -> {Timeline, Timepoint}
+tnesia_api:write(Timeline, Record) -> {Timeline, Timepoint}
 ```
 
 **Read**
@@ -115,7 +115,7 @@ Since = Till = integer()
 Order = asc | des
 Limit = integer()
 FiltermapFun = fun((RecordIndex, Record, Limit) -> {true, Record} | false)
-ForeachFun = fun((RecordIndex, Record, Limit) -> any())
+ForeachFun = fun((RecordIndex, Record, Limit) -> true | any)
 Fun = FiltermapFun | ForeachFun
 Return = true | false
 ```

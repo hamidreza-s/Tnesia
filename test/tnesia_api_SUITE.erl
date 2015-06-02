@@ -66,33 +66,64 @@ end_per_testcase(_TestCase, Config) ->
 test_tnesia_api(_Config) ->
 
     Timeline = "test-timeline",
+    RecordPrefix = "test-record-",
+    RecordsCount = 10,
+    MaxDelaySec = 1000,
 
     T1 = tnesia_lib:get_micro_timestamp(now()),
-    timer:sleep(1000),
-    tnesia_api:write(Timeline, "test-record-1"),
-    timer:sleep(1000),
-    tnesia_api:write(Timeline, "test-record-2"),
-    timer:sleep(1000),
-    tnesia_api:write(Timeline, "test-record-3"),
-    timer:sleep(1000),
-    tnesia_api:write(Timeline, "test-record-4"),
-    timer:sleep(1000),
-    tnesia_api:write(Timeline, "test-record-5"),
+    
+    lists:foreach(
+      fun(Item) ->
+	      timer:sleep(random:uniform(MaxDelaySec)),
+	      tnesia_api:write(Timeline, RecordPrefix ++ integer_to_list(Item))
+      end,
+      lists:seq(1, RecordsCount)
+     ),
+
     T2 = tnesia_lib:get_micro_timestamp(now()),
+    
+    QueryLimit = 20,
+    QueryOrder = des,
+    
+    %% --- filtermapt test
+    FiltermapResult = tnesia_api:query_filtermap(
+			[
+			 {timeline, Timeline},
+			 {since, T1},
+			 {till, T2},
+			 {order, QueryOrder},
+			 {limit, QueryLimit}
+			],
+			fun(Record, RecordIndex, RemainingLimit) ->
+				{true, {Record, RecordIndex, RemainingLimit}}
+			end
+		       ),
+      
+    if
+	QueryLimit < RecordsCount ->
+	    true = (length(FiltermapResult) =:= QueryLimit);
+	true ->
+	    true = (length(FiltermapResult) =:= RecordsCount)
+    end,
 
-    Result = tnesia_api:query_filtermap(
-	       [
-		{timeline, Timeline},
-		{since, T1},
-		{till, T2},
-		{order, des},
-		{limit, 10}
-	       ],
-	       fun(BaseRecord, BagRecord, Limit) ->
-		       {true, {BaseRecord, BagRecord, Limit}}
-	       end
-	      ),
+    %% --- foreach test
+    ForeachResult = tnesia_api:query_foreach(
+		      [
+		       {timeline, Timeline},
+		       {since, T1},
+		       {till, T2},
+		       {order, QueryOrder},
+		       {limit, QueryLimit}
+		      ],
+		      fun(Record, RecordIndex, RemainingLimit) ->
+			      {tnesia_base, {Timeline, _}, _} = Record,
+			      {tnesia_bag, {Timeline, _}, {Timeline, _}} = RecordIndex,
+			      true = (RemainingLimit =< QueryLimit),
 
-    true = (length(Result) =:= 5),
+			      true
+		      end
+		     ),
+
+    ok = ForeachResult,
 
     ok.
