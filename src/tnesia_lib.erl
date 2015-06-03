@@ -35,6 +35,7 @@
 -export([
 	 get_timestamp/1,
 	 get_micro_timestamp/1,
+	 get_micro_timestamp/2,
 	 get_micro_timestep/1
 	]).
 
@@ -617,6 +618,11 @@ get_micro_timestamp(TupleTime) ->
     SecTimeStamp = (Mega * 1000000 + Sec),
     MicroTimeStamp = (SecTimeStamp * 1000000) + Micro,
     MicroTimeStamp.
+
+get_micro_timestamp(Date, Time) ->
+    Seconds = calendar:datetime_to_gregorian_seconds({Date, Time}) - 62167219200,
+    TupleTime = {Seconds div 1000000, Seconds rem 1000000, 0},
+    get_micro_timestamp(TupleTime).
 
 %%--------------------------------------------------------------------
 %% get_micro_timestep
