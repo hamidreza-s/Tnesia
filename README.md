@@ -128,8 +128,8 @@ Query = [{timeline, Timeline},
 Since = Till = integer()
 Order = asc | des
 Limit = integer() | unlimited
-FiltermapFun = fun((RecordIndex, Record, Limit) -> {true, Record} | false)
-ForeachFun = fun((RecordIndex, Record, Limit) -> true | any)
+FiltermapFun = fun((Record, RecordIndex, Limit) -> {true, Record} | false)
+ForeachFun = fun((RecordIndex, Record, Limit) -> true | any())
 Fun = FiltermapFun | ForeachFun
 Return = true | false
 ```

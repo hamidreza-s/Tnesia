@@ -11,6 +11,7 @@
 	]).
 
 -include("tnesia.hrl").
+-include("types.hrl").
 
 %%====================================================================
 %% Main API
@@ -19,6 +20,8 @@
 %%--------------------------------------------------------------------
 %% write
 %%--------------------------------------------------------------------
+-spec write(tnesia_timeline(), tnesia_record()) -> 
+		   {tnesia_timeline(), tnesia_timepoint()}.
 write(Timeline, Record) ->
     Timepoint = tnesia_lib:write(
 	      #tnesia_input{
@@ -30,18 +33,21 @@ write(Timeline, Record) ->
 %%--------------------------------------------------------------------
 %% read
 %%--------------------------------------------------------------------
+-spec read(tnesia_timeline(), tnesia_timepoint()) -> tnesia_record().
 read(Timeline, Timepoint) ->
     tnesia_lib:read_timepoint(Timeline, Timepoint).
 
 %%--------------------------------------------------------------------
 %% remove
 %%--------------------------------------------------------------------
+-spec remove(tnesia_timeline(), tnesia_timepoint()) -> ok.
 remove(Timeline, Timepoint) ->
     tnesia_lib:remove_timepoint(Timeline, Timepoint).
 
 %%--------------------------------------------------------------------
 %% query_fetch
 %%--------------------------------------------------------------------
+-spec query_fetch(tnesia_query()) -> [tnesia_record()].
 query_fetch(Query) ->
     query_filtermap(
       Query, 
@@ -50,12 +56,14 @@ query_fetch(Query) ->
 %%--------------------------------------------------------------------
 %% query_filtermap
 %%--------------------------------------------------------------------
+-spec query_filtermap(tnesia_query(), tnesia_filtermap_fun()) -> [tnesia_record()].
 query_filtermap(Query, Fun) ->
     query_raw(Query, true, Fun).
 
 %%--------------------------------------------------------------------
 %% query_foreach
 %%--------------------------------------------------------------------
+-spec query_foreach(tnesia_query(), tnesia_foreach_fun()) -> ok.
 query_foreach(Query, Fun) ->
     [] = query_raw(Query, false, Fun),
     ok.
@@ -63,6 +71,7 @@ query_foreach(Query, Fun) ->
 %%--------------------------------------------------------------------
 %% query_raw
 %%--------------------------------------------------------------------
+-spec query_raw(tnesia_query(), tnesia_return(), tnesia_fun()) -> [tnesia_record()].
 query_raw(Query, Return, Fun) ->
 
     Timeline = proplists:get_value(timeline, Query, tnesia_lib:default_timeline()),
