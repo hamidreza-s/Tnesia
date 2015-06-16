@@ -5,7 +5,9 @@ deps
 *~
 logs
 test/logs
+bench/logs
 Mnesia*
+variables-ct*
 erl_crash.dump
 .rebar
 .DS_Store
