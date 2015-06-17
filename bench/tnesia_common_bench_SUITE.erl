@@ -1,5 +1,5 @@
 -module(tnesia_common_bench_SUITE).
--inclue_lib("common_test/include/ct.hrl").
+-include_lib("common_test/include/ct.hrl").
 
 -include("tnesia.hrl").
 
@@ -28,9 +28,9 @@ suite() -> [].
 
 groups() -> 
     [
-     {light_benchmark, [sequential], [get_ready, read_records, write_records]},
-     {normal_benchmark, [sequential], [get_ready, read_records, write_records]},
-     {heavy_benchmark, [sequential], [get_ready, read_records, write_records]}
+     {light_benchmark, [sequential], [get_ready, write_records, read_records]},
+     {normal_benchmark, [sequential], [get_ready, write_records, read_records]},
+     {heavy_benchmark, [sequential], [get_ready, write_records, read_records]}
     ].
 
 all() ->
@@ -118,28 +118,35 @@ get_ready(_Config) ->
 %% write_records
 %%--------------------------------------------------------------------
 write_records(Config) ->
-    TnesiaBenchConfig = proplists:get_value(tnesia_bench_config, Config),
+    TnesiaBenchConfig = ?config(tnesia_bench_config, Config),
 
-    _WriteConcurrency = proplists:get_value(write_concurrency, TnesiaBenchConfig),
-    _WriteQueryParams = proplists:get_value(write_query_params, TnesiaBenchConfig),
-    _WriteTotalQueries = proplists:get_value(write_total_queries, TnesiaBenchConfig),
+    _WriteConcurrency = ?config(write_concurrency, TnesiaBenchConfig),
+    _WriteQueryParams = ?config(write_query_params, TnesiaBenchConfig),
+    _WriteTotalQueries = ?config(write_total_queries, TnesiaBenchConfig),
 
-    TnesiaWriteResult = {tnesia_write_result, []},
-    {save_config, [TnesiaWriteResult|Config]}.
+    TnesiaWriteResult = {tnesia_write_result, [todo_write_result]},
+    SavedConfig = raw_saved_config(Config),
+    NewConfig = [TnesiaWriteResult|SavedConfig],
+
+    {save_config, NewConfig}.
 
 %%--------------------------------------------------------------------
 %% read_records
 %%--------------------------------------------------------------------
 read_records(Config) ->
-    TnesiaBenchConfig = proplists:get_value(tnesia_bench_config, Config),
+    TnesiaBenchConfig = ?config(tnesia_bench_config, Config),
 
-    _ReadConcurrency = proplists:get_value(read_concurrency, TnesiaBenchConfig),
-    _ReadTotalRecords = proplists:get_value(read_total_records, TnesiaBenchConfig),
-    _ReadRecordSize = proplists:get_value(read_record_size, TnesiaBenchConfig),
-    _ReadTimeDispersion = proplists:get_value(read_time_dispersion, TnesiaBenchConfig),
+    _ReadConcurrency = ?config(read_concurrency, TnesiaBenchConfig),
+    _ReadTotalRecords = ?config(read_total_records, TnesiaBenchConfig),
+    _ReadRecordSize = ?config(read_record_size, TnesiaBenchConfig),
+    _ReadTimeDispersion = ?config(read_time_dispersion, TnesiaBenchConfig),
 
-    TnesiaReadResult = {tnesia_read_result, []},
-    {save_config, [TnesiaReadResult|Config]}.
+    TnesiaReadResult = {tnesia_read_result, [todo_read_result]},
+    SavedConfig = raw_saved_config(Config),
+    NewConfig = [TnesiaReadResult|SavedConfig],
+
+    {save_config, NewConfig}.
+
 
 %%====================================================================
 %% Utils
@@ -149,9 +156,10 @@ read_records(Config) ->
 %% print_report
 %%--------------------------------------------------------------------
 print_report(GroupName, Config) ->
-    TnesiaBenchConfig = proplists:get_value(tnesia_bench_config, Config),
-    TnesiaWriteResult = [todo],
-    TnesiaReadResult = [todo],
+    TnesiaBenchConfig = ?config(tnesia_bench_config, Config),
+    TnesiaBenchResult = raw_saved_config(Config),
+    TnesiaWriteResult = ?config(tnesia_write_result, TnesiaBenchResult),
+    TnesiaReadResult = ?config(tnesia_read_result, TnesiaBenchResult),
 
     ct:print(
       default,
@@ -163,4 +171,13 @@ print_report(GroupName, Config) ->
           "== ~n",
       [GroupName, TnesiaBenchConfig, TnesiaWriteResult, TnesiaReadResult]
      ).
+
+%%--------------------------------------------------------------------
+%% raw_saved_config
+%%--------------------------------------------------------------------
+raw_saved_config(Config) ->
+    case ?config(saved_config, Config) of
+	{_SuiteName, SavedConfig} -> SavedConfig;
+	_ -> []
+    end.
 

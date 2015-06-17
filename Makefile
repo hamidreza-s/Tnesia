@@ -8,7 +8,7 @@ LOGDIR := $(PWD)logs
 LOGFILE := $(LOGDIR)/$(APP).log
 BENCHDIR := $(PWD)/bench
 
-.PHONY: all compile deps test bench start live
+.PHONY: all compile deps clean test bench start live
 
 all: compile
 
@@ -17,6 +17,11 @@ compile: deps
 
 deps:
 	@exec $(REBAR) get-deps
+
+clean:
+	@rm -rf $(PWD)/bench/logs/*
+	@rm -rf $(PWD)/test/logs/*
+	@exec $(REBAR) clean
 
 test: compile
 	@exec $(REBAR) ct
