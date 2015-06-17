@@ -1,9 +1,13 @@
 -module(tnesia_common_bench_SUITE).
--include_lib("common_test/include/ct.hrl").
+-compile(export_all).
 
+-include_lib("common_test/include/ct.hrl").
 -include("tnesia.hrl").
 
--compile(export_all).
+-record(tnesia_record, {id, value = [X || X <- lists:seq(1,32)]}).
+
+-define(TIMELINE(Int), list_to_binary("timeline-" ++ integer_to_list(Int))).
+-define(DEBUG(Format, Args), ct:print(default, 50, Format, Args)).
 
 %%====================================================================
 %% Benchmark Scenario
@@ -35,8 +39,8 @@ groups() ->
 
 all() ->
     [
-     %{group, light_benchmark},
-     %{group, normal_benchmark},
+     {group, light_benchmark},
+     {group, normal_benchmark},
      {group, heavy_benchmark}
     ].
 
@@ -54,37 +58,34 @@ end_per_suite(_Config) ->
 %% init_per_group | end_per_group
 %%--------------------------------------------------------------------
 init_per_group(light_benchmark, Config) ->
-    TnesiaBenchConfig = {tnesia_bench_config, [
-		    {read_concurrency, 1},
-		    {read_total_records, 100},
-		    {read_record_size, 10},
-		    {read_time_dispersion, 1},
-		    {write_concurrency, 1},
-		    {write_query_params, todo},
-		    {write_total_queries, 100}
-		   ]},
+    TnesiaBenchConfig = {tnesia_bench_config, 
+			 [
+			  {read_concurrency, 1},
+			  {read_total_records, 100},
+			  {read_time_dispersion, 1},
+			  {write_concurrency, 1},
+			  {write_total_queries, 100}
+			 ]},
     [TnesiaBenchConfig|Config];
 init_per_group(normal_benchmark, Config) ->
-    TnesiaBenchConfig = {tnesia_bench_config, [
-		    {read_concurrency, 5},
-		    {read_total_records, 500},
-		    {read_record_size, 50},
-		    {read_time_dispersion, 5},
-		    {write_concurrency, 5},
-		    {write_query_params, todo},
-		    {write_total_queries, 500}
-		   ]},
+    TnesiaBenchConfig = {tnesia_bench_config, 
+			 [
+			  {read_concurrency, 5},
+			  {read_total_records, 500},
+			  {read_time_dispersion, 5},
+			  {write_concurrency, 5},
+			  {write_total_queries, 500}
+			 ]},
     [TnesiaBenchConfig|Config];
 init_per_group(heavy_benchmark, Config) ->
-    TnesiaBenchConfig = {tnesia_bench_config, [
-		    {read_concurrency, 10},
-		    {read_total_records, 1000},
-		    {read_record_size, 100},
-		    {read_time_dispersion, 10},
-		    {write_concurrency, 10},
-		    {write_query_params, todo},
-		    {write_total_queries, 1000}
-		   ]},
+    TnesiaBenchConfig = {tnesia_bench_config, 
+			 [
+			  {read_concurrency, 10},
+			  {read_total_records, 1000},
+			  {read_time_dispersion, 10},
+			  {write_concurrency, 10},
+			  {write_total_queries, 1000}
+			 ]},
     [TnesiaBenchConfig|Config];
 init_per_group(_GroupName, Config) ->
     Config.
@@ -120,11 +121,33 @@ get_ready(_Config) ->
 write_records(Config) ->
     TnesiaBenchConfig = ?config(tnesia_bench_config, Config),
 
-    _WriteConcurrency = ?config(write_concurrency, TnesiaBenchConfig),
-    _WriteQueryParams = ?config(write_query_params, TnesiaBenchConfig),
-    _WriteTotalQueries = ?config(write_total_queries, TnesiaBenchConfig),
+    WriteConcurrency = ?config(write_concurrency, TnesiaBenchConfig),
+    WriteTotalQueries = ?config(write_total_queries, TnesiaBenchConfig),
 
-    TnesiaWriteResult = {tnesia_write_result, [todo_write_result]},
+    Self = self(),
+
+    T1 = tnesia_lib:get_micro_timestamp(now()),
+
+    lists:foreach(
+      fun(ThreadNumber) ->
+	      spawn(fun() ->
+			    writer_loop(
+			      Self,
+			      ThreadNumber,
+			      WriteTotalQueries
+			     )
+		    end)
+      end,
+      lists:seq(1, WriteConcurrency)
+     ),
+
+    T2 = tnesia_lib:get_micro_timestamp(now()),
+
+    WriterResult = wait_for_result(WriteConcurrency),
+    TimeResult = {time_result, [{start, T1}, {finish, T2}]},
+    Result = [WriterResult, TimeResult],
+
+    TnesiaWriteResult = {tnesia_write_result, Result},
     SavedConfig = raw_saved_config(Config),
     NewConfig = [TnesiaWriteResult|SavedConfig],
 
@@ -149,7 +172,50 @@ read_records(Config) ->
 
 
 %%====================================================================
-%% Utils
+%% Workers
+%%====================================================================
+
+%%--------------------------------------------------------------------
+%% writer_loop
+%%--------------------------------------------------------------------
+writer_loop(CallerPID, ThreadNumber, WriteTotalQueries) 
+  when WriteTotalQueries > 0 ->
+    
+    Timeline = ?TIMELINE(ThreadNumber),
+    Record = #tnesia_record{id = WriteTotalQueries},
+
+    tnesia_api:write(
+      Timeline,
+      Record
+     ),
+    
+    writer_loop(CallerPID, ThreadNumber, WriteTotalQueries - 1);
+writer_loop(CallerPID, ThreadNumber, _WriteTotalQueries) ->
+    CallerPID ! {finish, {tread, ThreadNumber}}.
+
+%%--------------------------------------------------------------------
+%% reader_loop
+%%--------------------------------------------------------------------
+
+%%--------------------------------------------------------------------
+%% wait_for_result
+%%--------------------------------------------------------------------
+wait_for_result(WriteConcurrency) ->
+    wait_for_result(WriteConcurrency, []).
+
+wait_for_result(WriteConcurrency, State) 
+  when WriteConcurrency > 0 ->
+    receive
+	{finish, Result} ->
+	    wait_for_result(WriteConcurrency - 1, [Result|State]);
+	_ -> 
+	    wait_for_result(WriteConcurrency, State)
+    end;
+wait_for_result(_WriteConcurrency, State) ->
+    State.
+
+%%====================================================================
+%% Utilities
 %%====================================================================
 
 %%--------------------------------------------------------------------
@@ -164,11 +230,10 @@ print_report(GroupName, Config) ->
     ct:print(
       default,
       50,
-      "== ~nBenchmark: ~p~n" ++
+      "Benchmark: ~p~n" ++
 	  "== ~nConfig:~n~p~n" ++
 	  "== ~nWrite Result:~n~p~n" ++
-	  "== ~nRead Result:~n~p~n" ++
-          "== ~n",
+	  "== ~nRead Result:~n~p~n",
       [GroupName, TnesiaBenchConfig, TnesiaWriteResult, TnesiaReadResult]
      ).
 

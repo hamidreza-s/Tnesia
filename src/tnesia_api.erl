@@ -24,10 +24,10 @@
 		   {tnesia_timeline(), tnesia_timepoint()}.
 write(Timeline, Record) ->
     Timepoint = tnesia_lib:write(
-	      #tnesia_input{
-		 timeline = Timeline,
-		 timepoint = now(),
-		 record = Record}),
+		  #tnesia_input{
+		     timeline = Timeline,
+		     timepoint = now(),
+		     record = Record}),
     {Timeline, Timepoint}.
 
 %%--------------------------------------------------------------------
