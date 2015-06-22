@@ -8,6 +8,7 @@ LOGDIR := $(PWD)logs
 LOGFILE := $(LOGDIR)/$(APP).log
 BENCHDIR := $(PWD)/bench
 
+
 .PHONY: all compile deps clean test bench start live
 
 all: compile
@@ -26,13 +27,32 @@ clean:
 test: compile
 	@exec $(REBAR) ct
 
-bench: compile
+light_bench: compile
 	@mkdir -p $(BENCHDIR)/logs
 	@exec $(CT) -suite tnesia_common_bench_SUITE \
 		-dir $(BENCHDIR) \
 		-include $(PWD)/include \
 		-pa $(PWD)/ebin \
-		-logdir $(BENCHDIR)/logs
+		-logdir $(BENCHDIR)/logs \
+		-group light_benchmark
+
+normal_bench: compile
+	@mkdir -p $(BENCHDIR)/logs
+	@exec $(CT) -suite tnesia_common_bench_SUITE \
+		-dir $(BENCHDIR) \
+		-include $(PWD)/include \
+		-pa $(PWD)/ebin \
+		-logdir $(BENCHDIR)/logs \
+		-group normal_benchmark
+
+heavy_bench: compile
+	@mkdir -p $(BENCHDIR)/logs
+	@exec $(CT) -suite tnesia_common_bench_SUITE \
+		-dir $(BENCHDIR) \
+		-include $(PWD)/include \
+		-pa $(PWD)/ebin \
+		-logdir $(BENCHDIR)/logs \
+		-group heavy_benchmark
 
 start: compile
 	@mkdir -p $(LOGDIR)

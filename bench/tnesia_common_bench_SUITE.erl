@@ -10,18 +10,6 @@
 -define(DEBUG(Format, Args), ct:print(default, 50, Format, Args)).
 
 %%====================================================================
-%% Benchmark Scenario
-%%
-%% - read
-%%  - input: concurrency, total_records, record_size, time_dispersion
-%%  - output: total_time, per_read_time, resource_usage
-%%
-%% - write
-%%  - input: concurrency, query_params, total_queries
-%%  - output: total_time, per_write_time, resource_usage
-%%====================================================================
-
-%%====================================================================
 %% CT Callbacks
 %%====================================================================
 
@@ -61,30 +49,33 @@ init_per_group(light_benchmark, Config) ->
     TnesiaBenchConfig = {tnesia_bench_config, 
 			 [
 			  {read_concurrency, 1},
-			  {read_total_records, 100},
-			  {read_time_dispersion, 1},
+			  {read_total_queries, 1000},
+			  {read_count_limit, 100},
+			  {read_time_length, {10, second}},
 			  {write_concurrency, 1},
-			  {write_total_queries, 100}
+			  {write_total_queries, 1000}
 			 ]},
     [TnesiaBenchConfig|Config];
 init_per_group(normal_benchmark, Config) ->
     TnesiaBenchConfig = {tnesia_bench_config, 
 			 [
-			  {read_concurrency, 5},
-			  {read_total_records, 500},
-			  {read_time_dispersion, 5},
-			  {write_concurrency, 5},
-			  {write_total_queries, 500}
+			  {read_concurrency, 2},
+			  {read_total_queries, 2000},
+			  {read_count_limit, 200},
+			  {read_time_length, {20, second}},
+			  {write_concurrency, 2},
+			  {write_total_queries, 2000}
 			 ]},
     [TnesiaBenchConfig|Config];
 init_per_group(heavy_benchmark, Config) ->
     TnesiaBenchConfig = {tnesia_bench_config, 
 			 [
-			  {read_concurrency, 10},
-			  {read_total_records, 1000},
-			  {read_time_dispersion, 10},
-			  {write_concurrency, 10},
-			  {write_total_queries, 1000}
+			  {read_concurrency, 4},
+			  {read_total_queries, 4000},
+			  {read_count_limit, 400},
+			  {read_time_length, {40, second}},
+			  {write_concurrency, 4},
+			  {write_total_queries, 4000}
 			 ]},
     [TnesiaBenchConfig|Config];
 init_per_group(_GroupName, Config) ->
@@ -115,6 +106,7 @@ get_ready(_Config) ->
     application:stop(tnesia),
     application:start(tnesia),
     ok.
+
 %%--------------------------------------------------------------------
 %% write_records
 %%--------------------------------------------------------------------
@@ -143,7 +135,8 @@ write_records(Config) ->
 
     T2 = tnesia_lib:get_micro_timestamp(now()),
 
-    WriterResult = wait_for_result(WriteConcurrency),
+    ThreadsResult = wait_for_result(WriteConcurrency),
+    WriterResult = {write_result, ThreadsResult},
     TimeResult = {time_result, [{start, T1}, {finish, T2}]},
     Result = [WriterResult, TimeResult],
 
@@ -159,17 +152,57 @@ write_records(Config) ->
 read_records(Config) ->
     TnesiaBenchConfig = ?config(tnesia_bench_config, Config),
 
-    _ReadConcurrency = ?config(read_concurrency, TnesiaBenchConfig),
-    _ReadTotalRecords = ?config(read_total_records, TnesiaBenchConfig),
-    _ReadRecordSize = ?config(read_record_size, TnesiaBenchConfig),
-    _ReadTimeDispersion = ?config(read_time_dispersion, TnesiaBenchConfig),
+    ReadConcurrency = ?config(read_concurrency, TnesiaBenchConfig),
+    ReadTotalQueries = ?config(read_total_queries, TnesiaBenchConfig),
+    ReadCountLimit = ?config(read_count_limit, TnesiaBenchConfig),
+    ReadTimeLength = ?config(read_time_length, TnesiaBenchConfig),
 
-    TnesiaReadResult = {tnesia_read_result, [todo_read_result]},
+    RawSavedConfig = raw_saved_config(Config),
+    TnesiaWriteResult = proplists:get_value(tnesia_write_result, RawSavedConfig),
+    TnesiaWriteTimes = proplists:get_value(time_result, TnesiaWriteResult),
+    TnesiaWriteStart = proplists:get_value(start, TnesiaWriteTimes),
+    TnesiaWriteFinish = proplists:get_value(finish, TnesiaWriteTimes),
+
+    %% log("times:~n~p", [{s, TnesiaWriteStart, f, TnesiaWriteFinish}]),
+
+    QueryInfo = [
+		 {time_start, TnesiaWriteStart},
+		 {time_finish, TnesiaWriteFinish},
+		 {read_total_queries, ReadTotalQueries},
+		 {read_count_limit, ReadCountLimit},
+		 {read_time_length, ReadTimeLength}
+		],
+
+    Self = self(),
+
+    T1 = tnesia_lib:get_micro_timestamp(now()),
+
+    lists:foreach(
+      fun(ThreadNumber) ->
+	      spawn(fun() ->
+			    reader_loop(
+			      Self,
+			      ThreadNumber,
+			      ReadTotalQueries,
+			      QueryInfo
+			     )
+		    end)
+      end,
+      lists:seq(1, ReadConcurrency)
+     ),
+
+    T2 = tnesia_lib:get_micro_timestamp(now()),
+
+    ThreadsResult = wait_for_result(ReadConcurrency),
+    ReaderResult = {read_result, ThreadsResult},
+    TimeResult = {time_result, [{start, T1}, {finish, T2}]},
+    Result = [ReaderResult, TimeResult],
+
+    TnesiaReadResult = {tnesia_read_result, Result},
     SavedConfig = raw_saved_config(Config),
     NewConfig = [TnesiaReadResult|SavedConfig],
 
     {save_config, NewConfig}.
-
 
 %%====================================================================
 %% Workers
@@ -196,6 +229,41 @@ writer_loop(CallerPID, ThreadNumber, _WriteTotalQueries) ->
 %%--------------------------------------------------------------------
 %% reader_loop
 %%--------------------------------------------------------------------
+reader_loop(CallerPID, ThreadNumber, RemainingReadQueries, QueryInfo) 
+  when RemainingReadQueries > 0 ->
+    
+    Timeline = ?TIMELINE(ThreadNumber),
+
+    TimeStart = proplists:get_value(time_start, QueryInfo),
+    TimeFinish = proplists:get_value(time_finish, QueryInfo),
+    ReadTotalQueries = proplists:get_value(read_total_queries, QueryInfo),    
+    ReadCountLimit = proplists:get_value(read_count_limit, QueryInfo),
+    ReadTimeLength = proplists:get_value(read_time_length, QueryInfo),
+
+    ReadTimeLengthValue = get_micro_second(ReadTimeLength),
+
+    X = TimeFinish - TimeStart,
+    TimeSince = random:uniform(X) + TimeStart,
+    TimeTill = TimeSince + ReadTimeLengthValue,
+
+    %% log("start - end: ~p - ~p~nsince - till: ~p - ~p", 
+    %% [TimeStart, TimeFinish, TimeSince, TimeTill]),
+    
+    QueryResult = tnesia_api:query_fetch(
+      [
+       {timeline, Timeline},
+       {since, TimeSince},
+       {till, TimeTill},
+       {order, asc},
+       {limit, unlimited}
+      ]
+     ),
+    
+    %% log("read query result:~n~p", [QueryResult]),
+
+    reader_loop(CallerPID, ThreadNumber, RemainingReadQueries - 1, QueryInfo);
+reader_loop(CallerPID, ThreadNumber, _RemainingReadQueries, _QueryInfo) ->
+    CallerPID ! {finish, {thread, ThreadNumber}}.
 
 %%--------------------------------------------------------------------
 %% wait_for_result
@@ -219,6 +287,12 @@ wait_for_result(_WriteConcurrency, State) ->
 %%====================================================================
 
 %%--------------------------------------------------------------------
+%% log
+%%--------------------------------------------------------------------
+log(Format, Arguments) ->
+    ct:print(default, 50, Format, Arguments).
+
+%%--------------------------------------------------------------------
 %% print_report
 %%--------------------------------------------------------------------
 print_report(GroupName, Config) ->
@@ -231,9 +305,9 @@ print_report(GroupName, Config) ->
       default,
       50,
       "Benchmark: ~p~n" ++
-	  "== ~nConfig:~n~p~n" ++
-	  "== ~nWrite Result:~n~p~n" ++
-	  "== ~nRead Result:~n~p~n",
+	  "--------------------------- ~nConfig:~n~p~n" ++
+	  "--------------------------- ~nWrite Result:~n~p~n" ++
+	  "--------------------------- ~nRead Result:~n~p~n",
       [GroupName, TnesiaBenchConfig, TnesiaWriteResult, TnesiaReadResult]
      ).
 
@@ -245,4 +319,12 @@ raw_saved_config(Config) ->
 	{_SuiteName, SavedConfig} -> SavedConfig;
 	_ -> []
     end.
+
+%%--------------------------------------------------------------------
+%% get_micro_second
+%%--------------------------------------------------------------------
+get_micro_second({Int, second}) ->
+    Int * 1000000;
+get_micro_second({Int, minute}) ->
+    Int * 60 * 1000000.
 
