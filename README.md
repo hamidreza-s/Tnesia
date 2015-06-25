@@ -118,20 +118,20 @@ Types
 ----
 
 ```erlang
-Timeline = Record = any()
-Timepoint = integer()
-Query = [{timeline, Timeline},
-         {since, Since},
-         {till, Till},
-         {order, Order},
-         {limit, Limit}]
-Since = Till = integer()
-Order = asc | des
-Limit = integer() | unlimited
-FiltermapFun = fun((Record, RecordIndex, Limit) -> {true, Record} | false)
-ForeachFun = fun((RecordIndex, Record, Limit) -> true | any())
-Fun = FiltermapFun | ForeachFun
-Return = true | false
+Timeline = Record :: any()
+Timepoint :: integer()
+Query :: [{timeline, Timeline},
+          {since, Since},
+          {till, Till},
+          {order, Order},
+          {limit, Limit}]
+Since = Till :: integer()
+Order :: asc | des
+Limit :: integer() | unlimited
+FiltermapFun :: fun((Record, RecordIndex, Limit) -> {true, Record} | false)
+ForeachFun :: fun((RecordIndex, Record, Limit) -> true | any())
+Fun :: FiltermapFun | ForeachFun
+Return :: true | false
 ```
 
 Examples
