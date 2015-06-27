@@ -51,7 +51,7 @@ field_names() :: field_name() [ , field_name() , ... ]
 field_name() :: string()
 field_value() :: string() | integer()
 
-datetime() :: YYYY-MM-DD HH:MI:SS
+datetime() :: YYYgY-MM-DD HH:MI:SS
 
 conditions() :: condition() [ , conjunctive() condition() , ... ]
 conjunctive() :: AND | OR
