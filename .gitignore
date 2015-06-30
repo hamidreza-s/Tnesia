@@ -7,6 +7,7 @@ logs
 test/logs
 bench/logs
 src/tnesia_tql_scanner.erl
+src/tnesia_tql_parser.erl
 Mnesia*
 variables-ct*
 erl_crash.dump

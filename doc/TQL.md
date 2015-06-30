@@ -12,44 +12,43 @@ Syntax
 **Select**
 
 ```sql
-SELECT { all | field_names() }
-FROM { timeline() }
-[ SINCE { datetime() } ]
-[ TILL { datetime() } ]
-[ ORDER { order() } ]
-[ LIMIT { integer() } ]
-[ WHERE { conditions() } ]
+SELECT all | { field_name() }
+FROM timeline()
+[ SINCE datetime() ]
+[ TILL datetime() ]
+[ ORDER order() ]
+[ LIMIT integer() ]
+[ WHERE conditions() ]
 ```
 
 **Insert**
 
 ```sql
-INSERT INTO { timeline() }
-RECORDS { records() }
+INSERT INTO timeline()
+RECORDS { record() }
 ```
 
 **Delete**
 
 ```sql
-DELETE FROM { timeline() }
-WHEN { record_time() }
+DELETE FROM timeline()
+WHEN record_time()
 ```
 
 Types
 ---
 
 ```sql
-timeline() :: string()
+{ any() } :: list()
 
-records() :: record() [ , record() , ... ]
+timeline() :: 'string()'
+
 record() :: field_name_value() [ , field_name_value() , ... ]
-record_time() :: string()
-
+record_time() :: 'string()'
 
 field_name_value() :: field_name() : field_value()
-field_names() :: field_name() [ , field_name() , ... ]
-field_name() :: string()
-field_value() :: string() | integer()
+field_name() :: 'string()'
+field_value() :: 'string()' | 'integer()'
 
 datetime() :: YYYgY-MM-DD HH:MI:SS
 
