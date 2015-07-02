@@ -30,6 +30,12 @@ records : {token, {records, TokenLine, TokenChars}}.
 delete : {token, {delete, TokenLine, TokenChars}}.
 when : {token, {'when', TokenLine, TokenChars}}.
 
+and : {token, {conjunctive, TokenLine, TokenChars}}.
+or : {token, {conjunctive, TokenLine, TokenChars}}.
+
+des : {token, {des, TokenLine, TokenChars}}.
+asc : {token, {asc, TokenLine, TokenChars}}.
+
 '{StringValues}+' : {token, {string_value, TokenLine, strip_val(TokenChars, TokenLen)}}.
 '{IntegerValues}+' : {token, {integer_value, TokenLine, strip_val(TokenChars, TokenLen)}}.
 

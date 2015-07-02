@@ -50,7 +50,8 @@ field_name_value() :: field_name() : field_value()
 field_name() :: 'string()'
 field_value() :: 'string()' | 'integer()'
 
-datetime() :: YYYgY-MM-DD HH:MI:SS
+datetime() :: 'string(YYYY-MM-DD HH:MI:SS)'
+order() :: 'string(des)' | 'string(asc)'
 
 conditions() :: condition() [ , conjunctive() condition() , ... ]
 conjunctive() :: AND | OR

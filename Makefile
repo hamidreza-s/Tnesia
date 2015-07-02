@@ -4,9 +4,10 @@ APP := tnesia
 COOKIE ?= secret
 PWD := $(shell pwd)
 REBAR := $(PWD)/rebar
-LOGDIR := $(PWD)logs
+LOGDIR := $(PWD)/logs
 LOGFILE := $(LOGDIR)/$(APP).log
 BENCHDIR := $(PWD)/bench
+TESTDIR := $(PWD)/test
 
 
 .PHONY: all compile deps clean test bench start live
@@ -20,12 +21,23 @@ deps:
 	@exec $(REBAR) get-deps
 
 clean:
-	@rm -rf $(PWD)/bench/logs/*
-	@rm -rf $(PWD)/test/logs/*
+	@rm -rf $(TESTDIR)/logs/*
+	@rm -rf $(BENCHDIR)/logs/*
 	@exec $(REBAR) clean
 
 test: compile
-	@exec $(REBAR) ct
+	@exec $(CT) \
+		-dir $(TESTDIR) \
+		-include $(PWD)/include \
+		-pa $(PWD)/ebin \
+		-logdir $(TESTDIR)/logs
+
+tql_test: compile
+	@exec $(CT) -suite tnesia_tql_SUITE \
+		-dir $(TESTDIR) \
+		-include $(PWD)/include \
+		-pa $(PWD)/ebin \
+		-logdir $(TESTDIR)/logs
 
 light_bench: compile
 	@mkdir -p $(BENCHDIR)/logs

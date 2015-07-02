@@ -3,7 +3,7 @@
 -export([]).
 
 -include("tnesia.hrl").
--include("types.htl").
+-include("types.hrl").
 
 %%====================================================================
 %% 
