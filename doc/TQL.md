@@ -12,20 +12,20 @@ Syntax
 **Select**
 
 ```sql
-SELECT all | { field_name() }
+SELECT all | record_keys()
 FROM timeline()
-[ SINCE datetime() ]
-[ TILL datetime() ]
-[ ORDER order() ]
-[ LIMIT integer() ]
-[ WHERE conditions() ]
+[ WHERE 
+  [ SINCE datetime() TILL datetime() ]
+  [ AND ORDER order() ]
+  [ AND LIMIT limit() ]
+]
 ```
 
 **Insert**
 
 ```sql
-INSERT INTO timeline()
-RECORDS { record() }
+INSERT INTO timeline() record_keys()
+RECORDS record_values()
 ```
 
 **Delete**
@@ -39,22 +39,11 @@ Types
 ---
 
 ```sql
-{ any() } :: list()
-
 timeline() :: 'string()'
-
-record() :: field_name_value() [ , field_name_value() , ... ]
+record_keys() :: {'string()', ...}
+record_values() :: {'string()', ...}
 record_time() :: 'string()'
-
-field_name_value() :: field_name() : field_value()
-field_name() :: 'string()'
-field_value() :: 'string()' | 'integer()'
-
 datetime() :: 'string(YYYY-MM-DD HH:MI:SS)'
-order() :: 'string(des)' | 'string(asc)'
-
-conditions() :: condition() [ , conjunctive() condition() , ... ]
-conjunctive() :: AND | OR
-condition :: field_name() comparator() field_value()
-comparator() :: == | != | > | >= | < | <=
+order() :: 'asc' | 'des'
+limit() :: 'integer()'
 ```

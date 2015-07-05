@@ -290,3 +290,27 @@ tnesia_tql_inserts_2(_Config) ->
 		  {list_values,1,["bar_val_3","bar_val_3"]}]}]}),
        
     ok.
+
+%%--------------------------------------------------------------------
+%% tnesia_tql_deletes
+%%--------------------------------------------------------------------
+tnesia_tql_deletes_1(_Config) ->
+
+    Query = "delete from 'foo' when '123456789'",
+    
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{delete,1,"delete"},
+	{from,1,"from"},
+	{atom_value,1,"foo"},
+	{'when',1,"when"},
+	{atom_value,1,"123456789"}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {delete,[{timeline,{from,1,"from"}},
+		{record_time,{'when',1,"when"}}]}),
+
+    ok.

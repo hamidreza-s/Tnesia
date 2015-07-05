@@ -14,7 +14,7 @@ insert_query
 insert_record_keys
 insert_record_values
 insert_records_values
-%% delete_query
+delete_query
 .
 
 %%====================================================================
@@ -55,6 +55,10 @@ query ->
 
 query ->
     insert_query :
+    '$1'.
+
+query ->
+    delete_query :
     '$1'.
 
 %%--------------------------------------------------------------------
@@ -143,6 +147,9 @@ insert_records_values ->
 %%--------------------------------------------------------------------
 %% delete query
 %%--------------------------------------------------------------------
+delete_query ->
+    delete from atom_value when atom_value :
+    {delete, [{timeline, '$2'}, {record_time, '$4'}]}.
 
 %%====================================================================
 %% Erlang Code
