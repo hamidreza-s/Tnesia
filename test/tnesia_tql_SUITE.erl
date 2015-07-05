@@ -64,45 +64,229 @@ end_per_testcase(_TestCase, Config) ->
 %%====================================================================
 
 %%--------------------------------------------------------------------
-%% tnesia_tql_scanner
+%% tnesia_tql_selects
 %%--------------------------------------------------------------------
-tnesia_tql_scanner(_Config) ->
-    
-    ?assertEqual({ok,[{select,1,"select"},
-		      {all,1,"all"},
-		      {from,1,"from"},
-		      {string_value,1,"foo"}],
-		  1},
-		 ?SCANNER:string("select all from 'foo'")
-		),
+tnesia_tql_select_1(_Config) ->
 
-    ?assertEqual({ok,[{select,1,"select"},
-		      {list_values,1,["bar","bat"]},
-		      {from,1,"from"},
-		      {string_value,1,"foo"}],
-		  1}, 
-		 ?SCANNER:string("select {'bar', 'bat'} from 'foo'")
-		),
-    
-    ?assertEqual({ok,[{select,1,"select"},
-		      {all,1,"all"},
-		      {from,1,"from"},
-		      {string_value,1,"foo"},
-		      {where,1,"where"},
-		      {order,1,"order"},
-		      {asc,1,"asc"},
-		      {conjunctive,1,"and"},
-		      {limit,1,"limit"},
-		      {integer_value,1,"10"}],
-		  1},
-		 ?SCANNER:string("select all from 'foo' where order asc and limit '10'")
-		),
-	
+    Query = "select all from 'foo'",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{all,1,"all"},
+	{from,1,"from"},
+	{atom_value,1,"foo"}]),
+   
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,
+	[{timeline,{all,1,"all"}},
+	 {from,{atom_value,1,"foo"}}]}),
+
     ok.
 
-%%--------------------------------------------------------------------
-%% tnesia_tql_scanner
-%%--------------------------------------------------------------------
-tnesia_tql_parser(_Config) ->
+tnesia_tql_select_2(_Config) ->
+
+    Query = "select {'bar', 'bat'} from 'foo'",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{list_values,1,["bar","bat"]},
+	{from,1,"from"},
+	{atom_value,1,"foo"}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,
+	[{timeline,{list_values,1,["bar","bat"]}},
+         {from,{atom_value,1,"foo"}}]}),
+       
+    ok.
+
+tnesia_tql_select_3(_Config) ->
+
+    Query = "select {'bar'} from 'foo'",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{list_values,1,["bar"]},
+	{from,1,"from"},
+	{atom_value,1,"foo"}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,
+	[{timeline,{list_values,1,["bar"]}},
+         {from,{atom_value,1,"foo"}}]}),
+       
+    ok.
+
+tnesia_tql_select_4(_Config) ->
+
+    Query = "select all from 'foo' where" ++ 
+	" limit '100' and" ++ 
+	" order 'des'",
     
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{all,1,"all"},
+	{from,1,"from"},
+	{atom_value,1,"foo"},
+	{where,1,"where"},
+	{limit,1,"limit"},
+	{atom_value,1,"100"},
+	{conjunctive,1,"and"},
+	{order,1,"order"},
+	{atom_value,1,"des"}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,[{timeline,{all,1,"all"}},
+         {from,{atom_value,1,"foo"}},
+         {where,
+	  [{limit,{atom_value,1,"100"}},
+	   {order,{atom_value,1,"des"}}]}]}),
+    
+    ok.
+
+tnesia_tql_select_5(_Config) ->
+
+    Query = "select all from 'foo' where" ++ 
+	" since '2010-01-01 12:00:00'" ++ 
+	" till '2015-01-01 12:00:00:00'",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{all,1,"all"},
+	{from,1,"from"},
+	{atom_value,1,"foo"},
+	{where,1,"where"},
+	{since,1,"since"},
+	{atom_value,1,"2010-01-01 12:00:00"},
+	{till,1,"till"},
+	{atom_value,1,"2015-01-01 12:00:00:00"}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,[{timeline,{all,1,"all"}},
+		{from,{atom_value,1,"foo"}},
+		{where,
+		 [{times,{{atom_value,1,"2010-01-01 12:00:00"},
+			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
+    ok.
+
+  
+tnesia_tql_select_6(_Config) ->
+
+    Query = "select all from 'foo' where" ++ 
+	" limit '100' and" ++ 
+	" order 'des' and" ++ 
+	" since '2010-01-01 12:00:00'" ++ 
+	" till '2015-01-01 12:00:00:00'",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{all,1,"all"},
+	{from,1,"from"},
+	{atom_value,1,"foo"},
+	{where,1,"where"},
+	{limit,1,"limit"},
+	{atom_value,1,"100"},
+	{conjunctive,1,"and"},
+	{order,1,"order"},
+	{atom_value,1,"des"},
+	{conjunctive,1,"and"},
+	{since,1,"since"},
+	{atom_value,1,"2010-01-01 12:00:00"},
+	{till,1,"till"},
+	{atom_value,1,"2015-01-01 12:00:00:00"}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,[{timeline,{all,1,"all"}},
+		{from,{atom_value,1,"foo"}},
+		{where,
+		 [{limit,{atom_value,1,"100"}},
+		  {order,{atom_value,1,"des"}},
+		  {times,{{atom_value,1,"2010-01-01 12:00:00"},
+			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
+
+    ok.
+
+
+%%--------------------------------------------------------------------
+%% tnesia_tql_inserts
+%%--------------------------------------------------------------------
+tnesia_tql_inserts_1(_Config) ->
+
+    Query = "insert into 'foo' {'bar_key', 'bat_key'}" ++
+	" records {'bar_val_1', 'bat_val_1'}",
+    
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{insert,1,"insert"},
+	{into,1,"into"},
+	{atom_value,1,"foo"},
+	{list_values,1,["bar_key","bat_key"]},
+	{records,1,"records"},
+	{list_values,1,["bar_val_1","bat_val_1"]}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {insert,[{timeline,{atom_value,1,"foo"}},
+		{keys,{list_values,1,["bar_key","bat_key"]}},
+		{values,[{list_values,1,["bar_val_1","bat_val_1"]}]}]}),
+    ok.
+
+tnesia_tql_inserts_2(_Config) ->
+
+    Query = "insert into 'foo' {'bar_key', 'bat_key'}" ++
+	" records" ++ 
+	" {'bar_val_1', 'bat_val_1'} and" ++
+	" {'bar_val_2', 'bar_val_2'} and" ++
+	" {'bar_val_3', 'bar_val_3'}",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{insert,1,"insert"},
+	{into,1,"into"},
+	{atom_value,1,"foo"},
+	{list_values,1,["bar_key","bat_key"]},
+	{records,1,"records"},
+	{list_values,1,["bar_val_1","bat_val_1"]},
+	{conjunctive,1,"and"},
+	{list_values,1,["bar_val_2","bar_val_2"]},
+	{conjunctive,1,"and"},
+	{list_values,1,["bar_val_3","bar_val_3"]}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {insert,[{timeline,{atom_value,1,"foo"}},
+		{keys,{list_values,1,["bar_key","bat_key"]}},
+		{values,
+		 [{list_values,1,["bar_val_1","bat_val_1"]},
+		  {list_values,1,["bar_val_2","bar_val_2"]},
+		  {list_values,1,["bar_val_3","bar_val_3"]}]}]}),
+       
     ok.
