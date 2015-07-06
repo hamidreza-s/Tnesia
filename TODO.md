@@ -6,7 +6,7 @@
 
 [+] Types (tnesia_api)
 
-[-] Benchmark
+[+] Benchmark
 
 [-] Config File
 
@@ -14,8 +14,14 @@
 
 [-] Tnesia Query Language (TQL)
 
+[+] TQL Scanner + Parser + Test
+
+[-] TQL Linter + Evaluator + Test
+
 [-] HTTP Interface
 
 [-] Cluster Replication
 
 [-] Cluster Partitioning
+
+[-] Multi Backend (Mnesia, LETS, LevelDB, etc)

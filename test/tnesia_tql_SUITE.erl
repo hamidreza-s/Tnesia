@@ -4,8 +4,6 @@
 
 -include("tnesia.hrl").
 
--define(SCANNER, tnesia_tql_scanner).
--define(PARSER, tnesia_tql_parser).
 -define(DEBUG(Format, Args), ct:print(default, 50, Format, Args)).
 
 -compile(export_all).
@@ -70,7 +68,7 @@ tnesia_tql_select_1(_Config) ->
 
     Query = "select all from 'foo'",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -78,7 +76,7 @@ tnesia_tql_select_1(_Config) ->
 	{from,1,"from"},
 	{atom_value,1,"foo"}]),
    
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,
@@ -91,7 +89,7 @@ tnesia_tql_select_2(_Config) ->
 
     Query = "select {'bar', 'bat'} from 'foo'",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -99,7 +97,7 @@ tnesia_tql_select_2(_Config) ->
 	{from,1,"from"},
 	{atom_value,1,"foo"}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,
@@ -112,7 +110,7 @@ tnesia_tql_select_3(_Config) ->
 
     Query = "select {'bar'} from 'foo'",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -120,7 +118,7 @@ tnesia_tql_select_3(_Config) ->
 	{from,1,"from"},
 	{atom_value,1,"foo"}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,
@@ -135,7 +133,7 @@ tnesia_tql_select_4(_Config) ->
 	" limit '100' and" ++ 
 	" order 'des'",
     
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -149,7 +147,7 @@ tnesia_tql_select_4(_Config) ->
 	{order,1,"order"},
 	{atom_value,1,"des"}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,[{timeline,{all,1,"all"}},
@@ -166,7 +164,7 @@ tnesia_tql_select_5(_Config) ->
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -179,7 +177,7 @@ tnesia_tql_select_5(_Config) ->
 	{till,1,"till"},
 	{atom_value,1,"2015-01-01 12:00:00:00"}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,[{timeline,{all,1,"all"}},
@@ -198,7 +196,7 @@ tnesia_tql_select_6(_Config) ->
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -217,7 +215,7 @@ tnesia_tql_select_6(_Config) ->
 	{till,1,"till"},
 	{atom_value,1,"2015-01-01 12:00:00:00"}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,[{timeline,{all,1,"all"}},
@@ -239,7 +237,7 @@ tnesia_tql_select_7(_Config) ->
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -262,7 +260,7 @@ tnesia_tql_select_7(_Config) ->
 	{till,1,"till"},
 	{atom_value,1,"2015-01-01 12:00:00:00"}]),
     
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,[{timeline,{all,1,"all"}},
@@ -287,7 +285,7 @@ tnesia_tql_select_8(_Config) ->
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
@@ -314,7 +312,7 @@ tnesia_tql_select_8(_Config) ->
 	{till,1,"till"},
 	{atom_value,1,"2015-01-01 12:00:00:00"}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {select,[{timeline,{all,1,"all"}},
@@ -340,7 +338,7 @@ tnesia_tql_inserts_1(_Config) ->
     Query = "insert into 'foo' {'bar_key', 'bat_key'}" ++
 	" records {'bar_val_1', 'bat_val_1'}",
     
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{insert,1,"insert"},
@@ -350,7 +348,7 @@ tnesia_tql_inserts_1(_Config) ->
 	{records,1,"records"},
 	{list_values,1,["bar_val_1","bat_val_1"]}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {insert,[{timeline,{atom_value,1,"foo"}},
@@ -366,7 +364,7 @@ tnesia_tql_inserts_2(_Config) ->
 	" {'bar_val_2', 'bar_val_2'} and" ++
 	" {'bar_val_3', 'bar_val_3'}",
 
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{insert,1,"insert"},
@@ -380,7 +378,7 @@ tnesia_tql_inserts_2(_Config) ->
 	{conjunctive,1,"and"},
 	{list_values,1,["bar_val_3","bar_val_3"]}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
        {insert,[{timeline,{atom_value,1,"foo"}},
@@ -399,7 +397,7 @@ tnesia_tql_deletes_1(_Config) ->
 
     Query = "delete from 'foo' when '123456789'",
     
-    {ok, Tokens, _} = ?SCANNER:string(Query),
+    {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{delete,1,"delete"},
@@ -408,10 +406,10 @@ tnesia_tql_deletes_1(_Config) ->
 	{'when',1,"when"},
 	{atom_value,1,"123456789"}]),
 
-    {ok, AST} = ?PARSER:parse(Tokens),
+    {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
-       {delete,[{timeline,{from,1,"from"}},
-		{record_time,{'when',1,"when"}}]}),
+       {delete,[{timeline,{atom_value,1,"foo"}},
+		{record_time,{atom_value,1,"123456789"}}]}),
 
     ok.

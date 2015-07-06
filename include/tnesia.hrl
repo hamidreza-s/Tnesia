@@ -1,3 +1,6 @@
+%%--------------------------------------------------------------------
+%% Records
+%%--------------------------------------------------------------------
 -record(tnesia_input, {timeline, timepoint, record}).
 -record(tnesia_base, {base_key, base_val}).
 -record(tnesia_bag, {bag_key, base_key}).
@@ -11,3 +14,20 @@
 	  order = asc :: asc | des
 	 }).
 
+%%--------------------------------------------------------------------
+%% Names
+%%--------------------------------------------------------------------
+-define(API, tnesia_api).
+-define(LIB, tnesia_lib).
+-define(TQL_API, tnesia_tql_api).
+-define(TQL_SCANNER, tnesia_tql_scanner).
+-define(TQL_PARSER, tnesia_tql_parser).
+-define(TQL_EVALUATOR, tnesia_tql_evaluator).
+
+%%--------------------------------------------------------------------
+%% Functions
+%%--------------------------------------------------------------------
+-define(DBG_CT(Format, Args), 
+	ct:print(default, 50, Format, Args)).
+-define(DBG(Format, Args), 
+	error_logger:info_msg(Format, Args)).

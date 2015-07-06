@@ -157,7 +157,7 @@ insert_records_values ->
 %%--------------------------------------------------------------------
 delete_query ->
     delete from atom_value when atom_value :
-    {delete, [{timeline, '$2'}, {record_time, '$4'}]}.
+    {delete, [{timeline, '$3'}, {record_time, '$5'}]}.
 
 %%====================================================================
 %% Erlang Code

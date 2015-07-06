@@ -70,37 +70,38 @@ test_tnesia_lib(_Config) ->
     RecordsCount = 10,
     MaxDelaySec = 1000,
 
-    T1 = tnesia_lib:get_micro_timestamp(now()),
+    T1 = ?LIB:get_micro_timestamp(now()),
     
     lists:foreach(
       fun(Item) ->
 	      timer:sleep(random:uniform(MaxDelaySec)),
-	      tnesia_api:write(Timeline, RecordPrefix ++ integer_to_list(Item))
+	      ?API:write(Timeline, RecordPrefix ++ integer_to_list(Item))
       end,
       lists:seq(1, RecordsCount)
      ),
 
-    T2 = tnesia_lib:get_micro_timestamp(now()),
+    T2 = ?LIB:get_micro_timestamp(now()),
  
     QueryLimit = 20,
     QueryOrder = des,
    
     %% --- call test
-    CallResult = tnesia_lib:init_read_since_till(
-		   #tnesia_query{
-		      bag = Timeline,
-		      from = T1,
-		      to = T2,
-		      limit = QueryLimit,
-		      order = QueryOrder,
-		      return = true
-		     },
-		   fun(Record, RecordIndex, RemainingLimit) ->
-			   {true, {Record, RecordIndex, RemainingLimit}}
-		   end
-		  ),
-
-      
+    CallResult = 
+	?LIB:init_read_since_till(
+	   #tnesia_query{
+	      bag = Timeline,
+	      from = T1,
+	      to = T2,
+	      limit = QueryLimit,
+	      order = QueryOrder,
+	      return = true
+	     },
+	   fun(Record, RecordIndex, RemainingLimit) ->
+		   {true, {Record, RecordIndex, RemainingLimit}}
+	   end
+	  ),
+    
+    
     if
 	QueryLimit < RecordsCount ->
 	    true = (length(CallResult) =:= QueryLimit);
@@ -109,25 +110,26 @@ test_tnesia_lib(_Config) ->
     end,
     
     %% --- cast test
-    CastResult = tnesia_lib:init_read_since_till(
-		   #tnesia_query{
-		      bag = Timeline,
-		      from = T1,
-		      to = T2,
-		      limit = QueryLimit,
-		      order = QueryOrder,
-		      return = false
-		     },
-		   fun(Record, RecordIndex, RemainingLimit) ->
-			   {tnesia_base, {Timeline, _}, _} = Record,
-			   {tnesia_bag, {Timeline, _}, {Timeline, _}} = RecordIndex,
-			   true = (RemainingLimit =< QueryLimit),
-			   
-			   true
-		   end
+    CastResult = 
+	?LIB:init_read_since_till(
+	   #tnesia_query{
+	      bag = Timeline,
+	      from = T1,
+	      to = T2,
+	      limit = QueryLimit,
+	      order = QueryOrder,
+	      return = false
+	     },
+	   fun(Record, RecordIndex, RemainingLimit) ->
+		   {tnesia_base, {Timeline, _}, _} = Record,
+		   {tnesia_bag, {Timeline, _}, {Timeline, _}} = RecordIndex,
+		   true = (RemainingLimit =< QueryLimit),
 		   
-		  ),
-
+		   true
+	   end
+	   
+	  ),
+    
     [] = CastResult,
-        
+    
     ok.
