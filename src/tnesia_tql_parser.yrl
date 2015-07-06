@@ -7,6 +7,7 @@ select_query
 select_fields
 select_wheres
 select_where
+select_where_condition
 select_where_time
 select_where_order
 select_where_limit
@@ -29,7 +30,6 @@ till
 order
 limit
 where
-and
 insert
 into
 delete
@@ -93,6 +93,10 @@ select_wheres ->
    lists:flatten(['$1', '$3']).
 
 select_where ->
+    select_where_condition :
+    '$1'.
+
+select_where ->
     select_where_time :
     '$1'.
 
@@ -103,6 +107,10 @@ select_where ->
 select_where ->
     select_where_limit :
     '$1'.
+
+select_where_condition ->
+    atom_value comparator atom_value :
+    {condition, {'$1', '$2', '$3'}}.
 
 select_where_time ->
     since atom_value till atom_value :

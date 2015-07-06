@@ -230,6 +230,107 @@ tnesia_tql_select_6(_Config) ->
 
     ok.
 
+tnesia_tql_select_7(_Config) ->
+
+    Query = "select all from 'foo' where" ++ 
+	" 'foo' == 'bar' and" ++
+	" limit '100' and" ++ 
+	" order 'des' and" ++ 
+	" since '2010-01-01 12:00:00'" ++ 
+	" till '2015-01-01 12:00:00:00'",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{all,1,"all"},
+	{from,1,"from"},
+	{atom_value,1,"foo"},
+	{where,1,"where"},
+	{atom_value,1,"foo"},
+	{comparator,1,"=="},
+	{atom_value,1,"bar"},
+	{conjunctive,1,"and"},
+	{limit,1,"limit"},
+	{atom_value,1,"100"},
+	{conjunctive,1,"and"},
+	{order,1,"order"},
+	{atom_value,1,"des"},
+	{conjunctive,1,"and"},
+	{since,1,"since"},
+	{atom_value,1,"2010-01-01 12:00:00"},
+	{till,1,"till"},
+	{atom_value,1,"2015-01-01 12:00:00:00"}]),
+    
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,[{timeline,{all,1,"all"}},
+		{from,{atom_value,1,"foo"}},
+		{where,
+		 [{condition,{{atom_value,1,"foo"},
+			      {comparator,1,"=="},
+			      {atom_value,1,"bar"}}},
+		  {limit,{atom_value,1,"100"}},
+		  {order,{atom_value,1,"des"}},
+		  {times,{{atom_value,1,"2010-01-01 12:00:00"},
+			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
+    ok.
+
+tnesia_tql_select_8(_Config) ->
+
+    Query = "select all from 'foo' where" ++ 
+	" 'foo' == 'bar' and" ++
+	" 'bal' < 'bat' and" ++
+	" limit '100' and" ++ 
+	" order 'des' and" ++ 
+	" since '2010-01-01 12:00:00'" ++ 
+	" till '2015-01-01 12:00:00:00'",
+
+    {ok, Tokens, _} = ?SCANNER:string(Query),
+    ?assertEqual(
+       Tokens,
+       [{select,1,"select"},
+	{all,1,"all"},
+	{from,1,"from"},
+	{atom_value,1,"foo"},
+	{where,1,"where"},
+	{atom_value,1,"foo"},
+	{comparator,1,"=="},
+	{atom_value,1,"bar"},
+	{conjunctive,1,"and"},
+	{atom_value,1,"bal"},
+	{comparator,1,"<"},
+	{atom_value,1,"bat"},
+	{conjunctive,1,"and"},
+	{limit,1,"limit"},
+	{atom_value,1,"100"},
+	{conjunctive,1,"and"},
+	{order,1,"order"},
+	{atom_value,1,"des"},
+	{conjunctive,1,"and"},
+	{since,1,"since"},
+	{atom_value,1,"2010-01-01 12:00:00"},
+	{till,1,"till"},
+	{atom_value,1,"2015-01-01 12:00:00:00"}]),
+
+    {ok, AST} = ?PARSER:parse(Tokens),
+    ?assertEqual(
+       AST,
+       {select,[{timeline,{all,1,"all"}},
+		{from,{atom_value,1,"foo"}},
+		{where,
+		 [{condition,{{atom_value,1,"foo"},
+			      {comparator,1,"=="},
+			      {atom_value,1,"bar"}}},
+		  {condition,{{atom_value,1,"bal"},
+			      {comparator,1,"<"},
+			      {atom_value,1,"bat"}}},
+		  {limit,{atom_value,1,"100"}},
+		  {order,{atom_value,1,"des"}},
+		  {times,{{atom_value,1,"2010-01-01 12:00:00"},
+			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
+       ok.
 
 %%--------------------------------------------------------------------
 %% tnesia_tql_inserts

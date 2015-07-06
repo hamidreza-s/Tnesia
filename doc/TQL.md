@@ -14,11 +14,11 @@ Syntax
 ```sql
 SELECT all | record_keys()
 FROM timeline()
-[ WHERE 
-  [ SINCE datetime() TILL datetime() ]
-  [ AND ORDER order() ]
-  [ AND LIMIT limit() ]
-]
+[ WHERE
+   [ [ AND ] conditions() ]
+   [ [ AND ] SINCE datetime() TILL datetime() ]
+   [ [ AND ] ORDER order() ]
+   [ [ AND ] LIMIT limit() ] ]
 ```
 
 **Insert**
@@ -46,4 +46,7 @@ record_time() :: 'string()'
 datetime() :: 'string(YYYY-MM-DD HH:MI:SS)'
 order() :: 'asc' | 'des'
 limit() :: 'integer()'
+conditions() :: condition() AND condition()
+condition() :: 'string()' comparator() 'string()'
+comparator() :: == | != | > | >= | < | <=
 ```
