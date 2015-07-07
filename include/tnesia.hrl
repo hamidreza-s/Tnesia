@@ -31,3 +31,5 @@
 	ct:print(default, 50, Format, Args)).
 -define(DBG(Format, Args), 
 	error_logger:info_msg(Format, Args)).
+-define(LOOKUP(Key, List),
+	proplists:get_value(Key, List)).

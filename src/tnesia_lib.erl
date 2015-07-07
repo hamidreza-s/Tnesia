@@ -125,9 +125,12 @@ seed_sample_data(Counter, Round) when Counter > 0 ->
 		       timeline = <<"id-", CounterBin/binary>>, 
 		       timepoint = now(), 
 		       record = #tnesia_sample{
-				   foo = <<RBin/binary, "-foo-", CounterBin/binary>>,
-				   bar = <<RBin/binary, "-bar-", CounterBin/binary>>,
-				   bat = <<RBin/binary, "-bat-", CounterBin/binary>>
+				   foo = <<RBin/binary, "-foo-", 
+					   CounterBin/binary>>,
+				   bar = <<RBin/binary, "-bar-", 
+					   CounterBin/binary>>,
+				   bat = <<RBin/binary, "-bat-", 
+					   CounterBin/binary>>
 				  }
 		      })
       end,
@@ -176,12 +179,14 @@ table_cleanup(BagKey, Since, Till, Fun) ->
 %% remove_record
 %%--------------------------------------------------------------------
 remove_record(BagRecord) -> 
-    [BaseRecord] = query_on_frags(
-		     async_dirty,
-		     fun() ->
-			     mnesia:read({tnesia_base, BagRecord#tnesia_bag.base_key})
-		     end
-		    ),
+    [BaseRecord] = 
+	query_on_frags(
+	  async_dirty,
+	  fun() ->
+		  mnesia:read({tnesia_base, 
+			       BagRecord#tnesia_bag.base_key})
+	  end
+	 ),
     remove_record(BagRecord, BaseRecord).
 
 %%--------------------------------------------------------------------
@@ -336,11 +341,12 @@ remove_timepoint(Timeline, Timepoint) ->
     Timestep = get_micro_timestep(Timepoint),
     BaseKey = {Timeline, Timepoint},
     BagKey = {Timeline, Timestep},
+
     query_on_frags(
       transaction,
       fun() ->
 	      mnesia:delete({tnesia_base, BaseKey}),
-	      mnesia:delete({tnesia_bag, BagKey})
+	      mnesia:delete_object({tnesia_bag, BagKey, BaseKey})
       end
      ).
 
@@ -447,8 +453,10 @@ run_tnesia_query(#tnesia_query{
 
     {NewTimepointFrom, NewTimepointTo} =
 	case Order of
-	    asc -> {TimepointFrom + get_micro_timestep_precision(), TimepointTo};
-	    des -> {TimepointFrom, TimepointTo - get_micro_timestep_precision()}
+	    asc -> 
+		{TimepointFrom + get_micro_timestep_precision(), TimepointTo};
+	    des -> 
+		{TimepointFrom, TimepointTo - get_micro_timestep_precision()}
 	end,
 
     NewTimestepFrom = get_micro_timestep(NewTimepointFrom),
@@ -493,16 +501,17 @@ cast_on_bag(
     Times = {BaseKeyTime, TimepointFrom, TimepointTo},
     case check_timestep_fault(Times) of
 	true ->
-	    [BaseRecord] = query_on_frags(
-			     async_dirty,
-			     fun() ->
-				     mnesia:read({
-						   tnesia_base,
-						   {Bag, BaseKeyTime}
-						 })
-			     end
-			    ),
-
+	    [BaseRecord] = 
+		query_on_frags(
+		  async_dirty,
+		  fun() ->
+			  mnesia:read({
+					tnesia_base,
+					{Bag, BaseKeyTime}
+				      })
+		  end
+		 ),
+	    
 	    NewLimit =
 		case apply(Fun, [BaseRecord, BagRecord, Limit]) of
 		    true -> 

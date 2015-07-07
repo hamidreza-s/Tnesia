@@ -1,4 +1,5 @@
 -module(tnesia_lib_SUITE).
+
 -include_lib("common_test/include/ct.hrl").
 
 -include("tnesia.hrl").

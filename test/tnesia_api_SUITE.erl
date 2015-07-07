@@ -1,4 +1,5 @@
 -module(tnesia_api_SUITE).
+
 -include_lib("common_test/include/ct.hrl").
 
 -include("tnesia.hrl").
@@ -87,7 +88,7 @@ test_tnesia_api(_Config) ->
     QueryLimit = 20,
     QueryOrder = des,
     
-    %% --- filtermapt test
+    %% --- filtermap test
     FiltermapResult = 
 	?API:query_filtermap(
 	  [

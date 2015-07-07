@@ -1,10 +1,9 @@
--module(tnesia_tql_SUITE).
+-module(tnesia_tql_common_SUITE).
+
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 -include("tnesia.hrl").
-
--define(DEBUG(Format, Args), ct:print(default, 50, Format, Args)).
 
 -compile(export_all).
 
@@ -80,8 +79,8 @@ tnesia_tql_select_1(_Config) ->
     ?assertEqual(
        AST,
        {select,
-	[{timeline,{all,1,"all"}},
-	 {from,{atom_value,1,"foo"}}]}),
+	[{timeline,{atom_value,1,"foo"}},
+	 {keys,{all,1,"all"}}]}),
 
     ok.
 
@@ -101,8 +100,8 @@ tnesia_tql_select_2(_Config) ->
     ?assertEqual(
        AST,
        {select,
-	[{timeline,{list_values,1,["bar","bat"]}},
-         {from,{atom_value,1,"foo"}}]}),
+	[{timeline,{atom_value,1,"foo"}},
+         {keys,{list_values,1,["bar", "bat"]}}]}),
        
     ok.
 
@@ -122,8 +121,8 @@ tnesia_tql_select_3(_Config) ->
     ?assertEqual(
        AST,
        {select,
-	[{timeline,{list_values,1,["bar"]}},
-         {from,{atom_value,1,"foo"}}]}),
+	[{timeline,{atom_value,1,"foo"}},
+         {keys,{list_values,1,["bar"]}}]}),
        
     ok.
 
@@ -150,8 +149,8 @@ tnesia_tql_select_4(_Config) ->
     {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
-       {select,[{timeline,{all,1,"all"}},
-         {from,{atom_value,1,"foo"}},
+       {select,[{timeline,{atom_value,1,"foo"}},
+         {keys,{all,1,"all"}},
          {where,
 	  [{limit,{atom_value,1,"100"}},
 	   {order,{atom_value,1,"des"}}]}]}),
@@ -180,8 +179,8 @@ tnesia_tql_select_5(_Config) ->
     {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
-       {select,[{timeline,{all,1,"all"}},
-		{from,{atom_value,1,"foo"}},
+       {select,[{timeline,{atom_value,1,"foo"}},
+		{keys,{all,1,"all"}},
 		{where,
 		 [{times,{{atom_value,1,"2010-01-01 12:00:00"},
 			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
@@ -218,8 +217,8 @@ tnesia_tql_select_6(_Config) ->
     {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
-       {select,[{timeline,{all,1,"all"}},
-		{from,{atom_value,1,"foo"}},
+       {select,[{timeline,{atom_value,1,"foo"}},
+		{keys,{all,1,"all"}},
 		{where,
 		 [{limit,{atom_value,1,"100"}},
 		  {order,{atom_value,1,"des"}},
@@ -263,8 +262,8 @@ tnesia_tql_select_7(_Config) ->
     {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
-       {select,[{timeline,{all,1,"all"}},
-		{from,{atom_value,1,"foo"}},
+       {select,[{timeline,{atom_value,1,"foo"}},
+		{keys,{all,1,"all"}},
 		{where,
 		 [{condition,{{atom_value,1,"foo"},
 			      {comparator,1,"=="},
@@ -315,8 +314,8 @@ tnesia_tql_select_8(_Config) ->
     {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
        AST,
-       {select,[{timeline,{all,1,"all"}},
-		{from,{atom_value,1,"foo"}},
+       {select,[{timeline,{atom_value,1,"foo"}},
+		{keys,{all,1,"all"}},
 		{where,
 		 [{condition,{{atom_value,1,"foo"},
 			      {comparator,1,"=="},

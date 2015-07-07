@@ -66,11 +66,11 @@ query ->
 %%--------------------------------------------------------------------
 select_query ->
     select select_fields from atom_value :
-    {select, [{timeline, '$2'}, {from, '$4'}]}.
+    {select, [{timeline, '$4'}, {keys, '$2'}]}.
 
 select_query ->
     select select_fields from atom_value where select_wheres:
-    {select, [{timeline, '$2'}, {from, '$4'}, {where, '$6'}]}.
+    {select, [{timeline, '$4'}, {keys, '$2'}, {where, '$6'}]}.
 
 select_fields ->
     all :

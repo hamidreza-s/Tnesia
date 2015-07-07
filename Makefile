@@ -33,7 +33,7 @@ test: compile
 		-logdir $(TESTDIR)/logs
 
 tql_test: compile
-	@exec $(CT) -suite tnesia_tql_SUITE \
+	@exec $(CT) -suite tnesia_tql_common_SUITE tnesia_tql_api_SUITE \
 		-dir $(TESTDIR) \
 		-include $(PWD)/include \
 		-pa $(PWD)/ebin \
