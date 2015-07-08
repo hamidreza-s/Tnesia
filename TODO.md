@@ -12,13 +12,17 @@
 
 [-] Blog Post
 
-[-] Tnesia Query Language (TQL)
+[+] Tnesia Query Language (TQL)
 
 [+] TQL Scanner + Parser + Test
 
-[-] TQL Linter + Evaluator + Test
+[+] TQL Linter + Evaluator + Test
+
+[-] TQL Documention
 
 [-] HTTP Interface
+
+[-] Web Panel
 
 [-] Cluster Replication
 

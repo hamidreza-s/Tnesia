@@ -130,7 +130,7 @@ tnesia_tql_select_4(_Config) ->
 
     Query = "select * from 'foo' where" ++ 
 	" limit '100' and" ++ 
-	" order 'des'",
+	" order des",
     
     {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
@@ -144,7 +144,7 @@ tnesia_tql_select_4(_Config) ->
 	{atom_value,1,"100"},
 	{conjunctive,1,"and"},
 	{order,1,"order"},
-	{atom_value,1,"des"}]),
+	{direction,1,"des"}]),
 
     {ok, AST} = ?TQL_PARSER:parse(Tokens),
     ?assertEqual(
@@ -153,7 +153,7 @@ tnesia_tql_select_4(_Config) ->
          {keys,{wildcard,1,"*"}},
          {where,
 	  [{limit,{atom_value,1,"100"}},
-	   {order,{atom_value,1,"des"}}]}]}),
+	   {order,{direction,1,"des"}}]}]}),
     
     ok.
 
@@ -191,7 +191,7 @@ tnesia_tql_select_6(_Config) ->
 
     Query = "select * from 'foo' where" ++ 
 	" limit '100' and" ++ 
-	" order 'des' and" ++ 
+	" order des and" ++ 
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
@@ -207,7 +207,7 @@ tnesia_tql_select_6(_Config) ->
 	{atom_value,1,"100"},
 	{conjunctive,1,"and"},
 	{order,1,"order"},
-	{atom_value,1,"des"},
+	{direction,1,"des"},
 	{conjunctive,1,"and"},
 	{since,1,"since"},
 	{atom_value,1,"2010-01-01 12:00:00"},
@@ -221,7 +221,7 @@ tnesia_tql_select_6(_Config) ->
 		{keys,{wildcard,1,"*"}},
 		{where,
 		 [{limit,{atom_value,1,"100"}},
-		  {order,{atom_value,1,"des"}},
+		  {order,{direction,1,"des"}},
 		  {times,{{atom_value,1,"2010-01-01 12:00:00"},
 			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
 
@@ -232,7 +232,7 @@ tnesia_tql_select_7(_Config) ->
     Query = "select * from 'foo' where" ++ 
 	" 'foo' == 'bar' and" ++
 	" limit '100' and" ++ 
-	" order 'des' and" ++ 
+	" order des and" ++ 
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
@@ -252,7 +252,7 @@ tnesia_tql_select_7(_Config) ->
 	{atom_value,1,"100"},
 	{conjunctive,1,"and"},
 	{order,1,"order"},
-	{atom_value,1,"des"},
+	{direction,1,"des"},
 	{conjunctive,1,"and"},
 	{since,1,"since"},
 	{atom_value,1,"2010-01-01 12:00:00"},
@@ -269,7 +269,7 @@ tnesia_tql_select_7(_Config) ->
 			      {comparator,1,"=="},
 			      {atom_value,1,"bar"}}},
 		  {limit,{atom_value,1,"100"}},
-		  {order,{atom_value,1,"des"}},
+		  {order,{direction,1,"des"}},
 		  {times,{{atom_value,1,"2010-01-01 12:00:00"},
 			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
     ok.
@@ -280,7 +280,7 @@ tnesia_tql_select_8(_Config) ->
 	" 'foo' == 'bar' and" ++
 	" 'bal' < 'bat' and" ++
 	" limit '100' and" ++ 
-	" order 'des' and" ++ 
+	" order des and" ++ 
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
@@ -304,7 +304,7 @@ tnesia_tql_select_8(_Config) ->
 	{atom_value,1,"100"},
 	{conjunctive,1,"and"},
 	{order,1,"order"},
-	{atom_value,1,"des"},
+	{direction,1,"des"},
 	{conjunctive,1,"and"},
 	{since,1,"since"},
 	{atom_value,1,"2010-01-01 12:00:00"},
@@ -324,7 +324,7 @@ tnesia_tql_select_8(_Config) ->
 			      {comparator,1,"<"},
 			      {atom_value,1,"bat"}}},
 		  {limit,{atom_value,1,"100"}},
-		  {order,{atom_value,1,"des"}},
+		  {order,{direction,1,"des"}},
 		  {times,{{atom_value,1,"2010-01-01 12:00:00"},
 			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
        ok.

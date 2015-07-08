@@ -1,7 +1,7 @@
--module(tnesia_tql_api).
+-module(tnesia_tql_formatter).
 
 -export([
-	 query/1
+	 json/1
 	]).
 
 -include("tnesia.hrl").
@@ -12,22 +12,12 @@
 %%====================================================================
 
 %%--------------------------------------------------------------------
-%% query
+%% json
 %%--------------------------------------------------------------------
--spec query(string()) -> list().
-query(Query) ->
-
-    {ok, Result} = 
-    	?TQL_LINTER:check_and_run(
-    	   Query,
-    	   [{syntax, {?TQL_SCANNER, string}},
-    	    {semantics, {?TQL_PARSER, parse}},
-    	    {evaluate, {?TQL_EVALUATOR, eval}},
-	    {format, {?TQL_FORMATTER, json}}]),
-    
-    Result.
+json(List) ->
+    %% @TODO: implement it!
+    {ok, List}.
     
 %%====================================================================
 %% Internal Functions
 %%====================================================================
-

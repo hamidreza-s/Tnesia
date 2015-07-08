@@ -23,6 +23,8 @@
 -define(TQL_SCANNER, tnesia_tql_scanner).
 -define(TQL_PARSER, tnesia_tql_parser).
 -define(TQL_EVALUATOR, tnesia_tql_evaluator).
+-define(TQL_LINTER, tnesia_tql_linter).
+-define(TQL_FORMATTER, tnesia_tql_formatter).
 
 %%--------------------------------------------------------------------
 %% Functions
@@ -33,3 +35,5 @@
 	error_logger:info_msg(Format, Args)).
 -define(LOOKUP(Key, List),
 	proplists:get_value(Key, List)).
+-define(FORMAT(Str, Arg),
+	lists:flatten(io_lib:format(Str, Arg))).

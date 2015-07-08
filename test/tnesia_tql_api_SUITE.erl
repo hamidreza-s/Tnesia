@@ -184,7 +184,7 @@ tql_api_test_4(_Config) ->
 	" from '" ++ Timeline ++ "' where" ++
 	" since '" ++ integer_to_list(Record1Timepoint) ++ "'" ++
 	" till '" ++ integer_to_list(Record3Timepoint) ++ "'" ++
-	" and order 'des' and limit '100'",
+	" and order des and limit '100'",
 
     SelectResult1 =  ?TQL_API:query(SelectQuery),
     ?assertEqual(length(SelectResult1), 3),
@@ -230,7 +230,7 @@ tql_api_test_5(_Config) ->
 	" from '" ++ Timeline ++ "' where" ++
 	" since '" ++ integer_to_list(Record1Timepoint) ++ "'" ++
 	" till '" ++ integer_to_list(Record3Timepoint) ++ "'" ++
-	" and order 'des' and limit '100'" ++
+	" and order des and limit '100'" ++
 	" and '" ++ Key2 ++ "' == 'null'" ++
 	" and '" ++ Key3 ++ "' < '3'",
 

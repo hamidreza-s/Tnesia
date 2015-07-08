@@ -56,7 +56,8 @@ query_fetch(Query) ->
 %%--------------------------------------------------------------------
 %% query_filtermap
 %%--------------------------------------------------------------------
--spec query_filtermap(tnesia_query(), tnesia_filtermap_fun()) -> [tnesia_record()].
+-spec query_filtermap(tnesia_query(), tnesia_filtermap_fun()) -> 
+			     [tnesia_record()].
 query_filtermap(Query, Fun) ->
     query_raw(Query, true, Fun).
 
@@ -71,14 +72,29 @@ query_foreach(Query, Fun) ->
 %%--------------------------------------------------------------------
 %% query_raw
 %%--------------------------------------------------------------------
--spec query_raw(tnesia_query(), tnesia_return(), tnesia_fun()) -> [tnesia_record()].
+-spec query_raw(tnesia_query(), tnesia_return(), tnesia_fun()) -> 
+		       [tnesia_record()].
 query_raw(Query, Return, Fun) ->
 
-    Timeline = proplists:get_value(timeline, Query, tnesia_lib:default_timeline()),
-    Since = proplists:get_value(since, Query, tnesia_lib:default_since()),
-    Till = proplists:get_value(till, Query, tnesia_lib:default_till()),
-    Order = proplists:get_value(order, Query, tnesia_lib:default_order()),
-    Limit = proplists:get_value(limit, Query, tnesia_lib:default_limit()),
+    Timeline = proplists:get_value(
+		 timeline, Query, 
+		 tnesia_lib:default_timeline()),
+
+    Since = proplists:get_value(
+	      since, Query, 
+	      tnesia_lib:default_since()),
+
+    Till = proplists:get_value(
+	     till, Query, 
+	     tnesia_lib:default_till()),
+
+    Order = proplists:get_value(
+	      order, Query, 
+	      tnesia_lib:default_order()),
+
+    Limit = proplists:get_value(
+	      limit, Query, 
+	      tnesia_lib:default_limit()),
 
     tnesia_lib:init_read_since_till(
       #tnesia_query{

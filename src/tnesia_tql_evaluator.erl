@@ -102,7 +102,7 @@ pre_select(
 pre_select(
  Timeline,
  Keys,
- [{order, {atom_value, _, Order}} | Wheres ],
+ [{order, {direction, _, Order}} | Wheres ],
  TupleState,
  FunState) ->
     pre_select(

@@ -43,7 +43,7 @@ timeline() :: 'string()'
 record_keys() :: {'string()', ...}
 record_values() :: {'string()', ...}
 record_time() :: 'string()'
-datetime() :: 'string(YYYY-MM-DD HH:MI:SS)'
+datetime() :: 'integer()'
 order() :: 'asc' | 'des'
 limit() :: 'integer()'
 conditions() :: condition() AND condition()

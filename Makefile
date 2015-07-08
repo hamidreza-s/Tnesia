@@ -32,8 +32,20 @@ test: compile tql_test
 		-pa $(PWD)/ebin \
 		-logdir $(TESTDIR)/logs
 
+tql_linter_test: compile
+	@exec $(CT) \
+		-suite tnesia_tql_linter_SUITE \
+		-dir $(TESTDIR) \
+		-include $(PWD)/include \
+		-pa $(PWD)/ebin \
+		-logdir $(TESTDIR)/logs
+
+
 tql_test: compile
-	@exec $(CT) -suite tnesia_tql_common_SUITE tnesia_tql_api_SUITE \
+	@exec $(CT) \
+		-suite tnesia_tql_common_SUITE \
+		-suite tnesia_tql_linter_SUITE \
+		-suite tnesia_tql_api_SUITE \
 		-dir $(TESTDIR) \
 		-include $(PWD)/include \
 		-pa $(PWD)/ebin \

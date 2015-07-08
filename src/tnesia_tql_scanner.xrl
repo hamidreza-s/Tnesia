@@ -31,6 +31,8 @@ delete : {token, {delete, TokenLine, TokenChars}}.
 records : {token, {records, TokenLine, TokenChars}}.
 when : {token, {'when', TokenLine, TokenChars}}.
 and : {token, {conjunctive, TokenLine, TokenChars}}.
+asc : {token, {direction, TokenLine, TokenChars}}.
+des : {token, {direction, TokenLine, TokenChars}}.
 
 {SingleQuoted}+ : {token, {atom_value,
 			   TokenLine, 

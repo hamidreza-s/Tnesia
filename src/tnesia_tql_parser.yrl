@@ -40,6 +40,7 @@ atom_value
 list_values
 comparator
 conjunctive
+direction
 .
 
 %%====================================================================
@@ -118,7 +119,7 @@ select_where_time ->
     {times, {'$2', '$4'}}.
 
 select_where_order ->
-    order atom_value :
+    order direction :
     {order, '$2'}.
 
 select_where_limit ->
