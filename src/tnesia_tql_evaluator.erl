@@ -126,6 +126,17 @@ pre_select(
       TupleState,
       [{Operand1, Comparator, Operand2} | FunState]);
 pre_select(
+  {atom_value, _, Timeline},
+  {wildcard, _, _},
+  [],
+  TupleConditions,
+  FunConditions) ->
+    do_select(
+      wildcard,
+      [{timeline, Timeline} | TupleConditions],
+      FunConditions
+     );
+pre_select(
  {atom_value, _, Timeline},
  {list_values, _, Keys},
  [],
@@ -151,7 +162,7 @@ do_select(Keys, TupleConditions, FunConditions) ->
 %%====================================================================
 
 %%--------------------------------------------------------------------
-%% apply_fun_conditions
+%% apply_fun_conditions_and_filter_keys
 %%--------------------------------------------------------------------
 apply_fun_conditions_and_filter_keys(
   MetaRecord, 
@@ -202,7 +213,11 @@ apply_fun_conditions_and_filter_keys(
     {Timeline, Timepoint} = Record#tnesia_base.base_key,
     RecordVal = Record#tnesia_base.base_val,
 
-    FilteredVal = [{Key, ?LOOKUP(Key, RecordVal)} || Key <- Keys], 
+    FilteredVal = 
+	case Keys of
+	    wildcard -> RecordVal;
+	    _ -> [{Key, ?LOOKUP(Key, RecordVal)} || Key <- Keys]
+	end,
 
     {true, [{timeline, Timeline},
 	    {timepoint, Timepoint},

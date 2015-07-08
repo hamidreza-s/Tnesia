@@ -65,13 +65,13 @@ end_per_testcase(_TestCase, Config) ->
 %%--------------------------------------------------------------------
 tnesia_tql_select_1(_Config) ->
 
-    Query = "select all from 'foo'",
+    Query = "select * from 'foo'",
 
     {ok, Tokens, _} = ?TQL_SCANNER:string(Query),
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
-	{all,1,"all"},
+	{wildcard,1,"*"},
 	{from,1,"from"},
 	{atom_value,1,"foo"}]),
    
@@ -80,7 +80,7 @@ tnesia_tql_select_1(_Config) ->
        AST,
        {select,
 	[{timeline,{atom_value,1,"foo"}},
-	 {keys,{all,1,"all"}}]}),
+	 {keys,{wildcard,1,"*"}}]}),
 
     ok.
 
@@ -128,7 +128,7 @@ tnesia_tql_select_3(_Config) ->
 
 tnesia_tql_select_4(_Config) ->
 
-    Query = "select all from 'foo' where" ++ 
+    Query = "select * from 'foo' where" ++ 
 	" limit '100' and" ++ 
 	" order 'des'",
     
@@ -136,7 +136,7 @@ tnesia_tql_select_4(_Config) ->
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
-	{all,1,"all"},
+	{wildcard,1,"*"},
 	{from,1,"from"},
 	{atom_value,1,"foo"},
 	{where,1,"where"},
@@ -150,7 +150,7 @@ tnesia_tql_select_4(_Config) ->
     ?assertEqual(
        AST,
        {select,[{timeline,{atom_value,1,"foo"}},
-         {keys,{all,1,"all"}},
+         {keys,{wildcard,1,"*"}},
          {where,
 	  [{limit,{atom_value,1,"100"}},
 	   {order,{atom_value,1,"des"}}]}]}),
@@ -159,7 +159,7 @@ tnesia_tql_select_4(_Config) ->
 
 tnesia_tql_select_5(_Config) ->
 
-    Query = "select all from 'foo' where" ++ 
+    Query = "select * from 'foo' where" ++ 
 	" since '2010-01-01 12:00:00'" ++ 
 	" till '2015-01-01 12:00:00:00'",
 
@@ -167,7 +167,7 @@ tnesia_tql_select_5(_Config) ->
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
-	{all,1,"all"},
+	{wildcard,1,"*"},
 	{from,1,"from"},
 	{atom_value,1,"foo"},
 	{where,1,"where"},
@@ -180,7 +180,7 @@ tnesia_tql_select_5(_Config) ->
     ?assertEqual(
        AST,
        {select,[{timeline,{atom_value,1,"foo"}},
-		{keys,{all,1,"all"}},
+		{keys,{wildcard,1,"*"}},
 		{where,
 		 [{times,{{atom_value,1,"2010-01-01 12:00:00"},
 			  {atom_value,1,"2015-01-01 12:00:00:00"}}}]}]}),
@@ -189,7 +189,7 @@ tnesia_tql_select_5(_Config) ->
   
 tnesia_tql_select_6(_Config) ->
 
-    Query = "select all from 'foo' where" ++ 
+    Query = "select * from 'foo' where" ++ 
 	" limit '100' and" ++ 
 	" order 'des' and" ++ 
 	" since '2010-01-01 12:00:00'" ++ 
@@ -199,7 +199,7 @@ tnesia_tql_select_6(_Config) ->
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
-	{all,1,"all"},
+	{wildcard,1,"*"},
 	{from,1,"from"},
 	{atom_value,1,"foo"},
 	{where,1,"where"},
@@ -218,7 +218,7 @@ tnesia_tql_select_6(_Config) ->
     ?assertEqual(
        AST,
        {select,[{timeline,{atom_value,1,"foo"}},
-		{keys,{all,1,"all"}},
+		{keys,{wildcard,1,"*"}},
 		{where,
 		 [{limit,{atom_value,1,"100"}},
 		  {order,{atom_value,1,"des"}},
@@ -229,7 +229,7 @@ tnesia_tql_select_6(_Config) ->
 
 tnesia_tql_select_7(_Config) ->
 
-    Query = "select all from 'foo' where" ++ 
+    Query = "select * from 'foo' where" ++ 
 	" 'foo' == 'bar' and" ++
 	" limit '100' and" ++ 
 	" order 'des' and" ++ 
@@ -240,7 +240,7 @@ tnesia_tql_select_7(_Config) ->
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
-	{all,1,"all"},
+	{wildcard,1,"*"},
 	{from,1,"from"},
 	{atom_value,1,"foo"},
 	{where,1,"where"},
@@ -263,7 +263,7 @@ tnesia_tql_select_7(_Config) ->
     ?assertEqual(
        AST,
        {select,[{timeline,{atom_value,1,"foo"}},
-		{keys,{all,1,"all"}},
+		{keys,{wildcard,1,"*"}},
 		{where,
 		 [{condition,{{atom_value,1,"foo"},
 			      {comparator,1,"=="},
@@ -276,7 +276,7 @@ tnesia_tql_select_7(_Config) ->
 
 tnesia_tql_select_8(_Config) ->
 
-    Query = "select all from 'foo' where" ++ 
+    Query = "select * from 'foo' where" ++ 
 	" 'foo' == 'bar' and" ++
 	" 'bal' < 'bat' and" ++
 	" limit '100' and" ++ 
@@ -288,7 +288,7 @@ tnesia_tql_select_8(_Config) ->
     ?assertEqual(
        Tokens,
        [{select,1,"select"},
-	{all,1,"all"},
+	{wildcard,1,"*"},
 	{from,1,"from"},
 	{atom_value,1,"foo"},
 	{where,1,"where"},
@@ -315,7 +315,7 @@ tnesia_tql_select_8(_Config) ->
     ?assertEqual(
        AST,
        {select,[{timeline,{atom_value,1,"foo"}},
-		{keys,{all,1,"all"}},
+		{keys,{wildcard,1,"*"}},
 		{where,
 		 [{condition,{{atom_value,1,"foo"},
 			      {comparator,1,"=="},

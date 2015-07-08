@@ -7,6 +7,7 @@ WhiteSpace = ([\s])
 ControlChars = ([\000-\037])
 Comparator = (==|!=|>|>=|<|<=)
 CharValues = [A-Za-z]
+WildCard = \*
 IntegerValues = [0-9]
 SingleQuoted = '(\\\^.|\\.|[^\'])*'
 ListValues = {(\\\^.|\\.|[^\}])*}
@@ -40,6 +41,7 @@ and : {token, {conjunctive, TokenLine, TokenChars}}.
 			 parse_list(TokenChars)}}.
 
 {Comparator}+ : {token, {comparator, TokenLine, TokenChars}}.
+{WildCard}+ : {token,{wildcard,TokenLine, TokenChars}}.
 {WhiteSpace}+ : skip_token.
 {ControlChars}+ : skip_token.
 

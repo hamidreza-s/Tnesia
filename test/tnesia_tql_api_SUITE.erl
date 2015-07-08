@@ -90,12 +90,42 @@ tql_api_test_1(_Config) ->
 	"select " ++ Keys ++
 	" from '" ++ Timeline ++ "'",
     
-    SelectResult =  ?TQL_API:query(SelectQuery),
+    SelectResult = ?TQL_API:query(SelectQuery),
     ?assertEqual(length(SelectResult), 3),
 
     ok.
 
 tql_api_test_2(_Config) ->
+    
+    Timeline = timeline(),
+    Key1 = key1(), Key2 = key2(), Key3 = key3(),
+    Keys = "{'" ++ Key1 ++ "', '" ++ Key2 ++ "', '" ++ Key3 ++ "'}",
+    Record1 = record1(), Record2 = record2(), Record3 = record3(),
+
+    %% --- insert query
+    InsertQuery = "insert into '" ++ Timeline ++ "' " ++ Keys ++
+	" records " ++ Record1 ++ 
+	" and " ++ Record2 ++
+	" and " ++ Record3,
+
+    {ok, [{Timeline, 
+	   Record1Timepoint}, 
+	  {Timeline, 
+	   _Record2Timepoint},
+	  {Timeline,
+	   Record3Timepoint}]} = ?TQL_API:query(InsertQuery),
+
+    %% --- select query
+    SelectQuery = "select * from '" ++ Timeline ++ "' where" ++
+	" since '" ++ integer_to_list(Record1Timepoint) ++ "'" ++
+	" till '" ++ integer_to_list(Record3Timepoint) ++ "'",
+    
+    SelectResult = ?TQL_API:query(SelectQuery),
+    ?assertEqual(length(SelectResult), 3),
+
+    ok.
+
+tql_api_test_3(_Config) ->
 
     Timeline = timeline(),
     Key1 = key1(), Key2 = key2(), Key3 = key3(),
@@ -128,7 +158,7 @@ tql_api_test_2(_Config) ->
 
     ok.
 
-tql_api_test_3(_Config) ->
+tql_api_test_4(_Config) ->
 
     Timeline = timeline(),
     Key1 = key1(), Key2 = key2(), Key3 = key3(),
@@ -174,7 +204,7 @@ tql_api_test_3(_Config) ->
 
     ok.
 
-tql_api_test_4(_Config) ->
+tql_api_test_5(_Config) ->
 
     Timeline = timeline(),
     Key1 = key1(), Key2 = key2(), Key3 = key3(),

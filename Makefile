@@ -25,7 +25,7 @@ clean:
 	@rm -rf $(BENCHDIR)/logs/*
 	@exec $(REBAR) clean
 
-test: compile
+test: compile tql_test
 	@exec $(CT) \
 		-dir $(TESTDIR) \
 		-include $(PWD)/include \
@@ -46,7 +46,7 @@ light_bench: compile
 		-include $(PWD)/include \
 		-pa $(PWD)/ebin \
 		-logdir $(BENCHDIR)/logs \
-		-group light_benchmark
+		uowqier-group light_benchmark
 
 normal_bench: compile
 	@mkdir -p $(BENCHDIR)/logs

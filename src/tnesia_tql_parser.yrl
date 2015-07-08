@@ -24,6 +24,7 @@ delete_query
 Terminals
 select
 all
+wildcard
 from
 since
 till
@@ -73,7 +74,7 @@ select_query ->
     {select, [{timeline, '$4'}, {keys, '$2'}, {where, '$6'}]}.
 
 select_fields ->
-    all :
+    wildcard :
     '$1'.
 
 select_fields ->
