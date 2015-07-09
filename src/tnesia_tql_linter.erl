@@ -66,7 +66,7 @@ stop({error, {_Line1, _Module, {illegal, Token}}, _Line2}) ->
 stop({error, {_Line1, _Module, [_ErrorDesc, []]}}) ->
     Reason = format_semantics_error("check your query!", []),
     {ok, Reason};
-stop({error, {_Line1, _Module, [ErrorDesc, ErrorToken]}}) ->
+stop({error, {_Line1, _Module, [_ErrorDesc, ErrorToken]}}) ->
     Reason = format_semantics_error(
 	       "there is somethig wrong around ~s!", [ErrorToken]),
     {ok, Reason};

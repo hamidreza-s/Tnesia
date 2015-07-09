@@ -4,6 +4,8 @@
 	 start/0
 	]).
 
+-include("tnesia.hrl").
+
 %%====================================================================
 %% Tnesia Management
 %%====================================================================
@@ -12,4 +14,8 @@
 %% start
 %%--------------------------------------------------------------------
 start() ->
-    application:start(tnesia).
+    application:start(tnesia),
+    [tnesia_http_tql:add_listener() || 
+	_ <- lists:seq(1, ?CONFIG_HTTP_TQL_LISTENERS)],
+
+    ok.

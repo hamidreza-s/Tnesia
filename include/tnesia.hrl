@@ -29,7 +29,7 @@
 %%--------------------------------------------------------------------
 %% Functions
 %%--------------------------------------------------------------------
--define(DBG_CT(Format, Args), 
+-define(DBG_CT(Format, Args),
 	ct:print(default, 50, Format, Args)).
 -define(DBG(Format, Args), 
 	error_logger:info_msg(Format, Args)).
@@ -37,3 +37,10 @@
 	proplists:get_value(Key, List)).
 -define(FORMAT(Str, Arg),
 	lists:flatten(io_lib:format(Str, Arg))).
+
+%%--------------------------------------------------------------------
+%% Configs
+%%--------------------------------------------------------------------
+-define(CONFIG_HTTP_TQL_PORT, 1881).
+-define(CONFIG_HTTP_TQL_IP, {127, 0, 0, 1}).
+-define(CONFIG_HTTP_TQL_LISTENERS, 5).
