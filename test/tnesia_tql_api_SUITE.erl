@@ -78,19 +78,19 @@ tql_api_test_1(_Config) ->
 	" and " ++ Record2 ++
 	" and " ++ Record3,
 
-    {ok, [{Timeline, 
-	   _Record1Timepoint}, 
-	  {Timeline, 
-	   _Record2Timepoint},
-	  {Timeline,
-	   _Record3Timepoint}]} = ?TQL_API:query(InsertQuery),
+    {insert, [{Timeline, 
+	       _Record1Timepoint}, 
+	      {Timeline, 
+	       _Record2Timepoint},
+	      {Timeline,
+	       _Record3Timepoint}]} = ?TQL_API:query_term(InsertQuery),
 
     %% --- select query
     SelectQuery =
 	"select " ++ Keys ++
 	" from '" ++ Timeline ++ "'",
     
-    SelectResult = ?TQL_API:query(SelectQuery),
+    {select, SelectResult} = ?TQL_API:query_term(SelectQuery),
     ?assertEqual(length(SelectResult), 3),
 
     ok.
@@ -108,19 +108,19 @@ tql_api_test_2(_Config) ->
 	" and " ++ Record2 ++
 	" and " ++ Record3,
 
-    {ok, [{Timeline, 
-	   Record1Timepoint}, 
-	  {Timeline, 
-	   _Record2Timepoint},
-	  {Timeline,
-	   Record3Timepoint}]} = ?TQL_API:query(InsertQuery),
+    {insert, [{Timeline, 
+	       Record1Timepoint}, 
+	      {Timeline, 
+	       _Record2Timepoint},
+	      {Timeline,
+	       Record3Timepoint}]} = ?TQL_API:query_term(InsertQuery),
 
     %% --- select query
     SelectQuery = "select * from '" ++ Timeline ++ "' where" ++
 	" since '" ++ integer_to_list(Record1Timepoint) ++ "'" ++
 	" till '" ++ integer_to_list(Record3Timepoint) ++ "'",
     
-    SelectResult = ?TQL_API:query(SelectQuery),
+    {select, SelectResult} = ?TQL_API:query_term(SelectQuery),
     ?assertEqual(length(SelectResult), 3),
 
     ok.
@@ -138,20 +138,20 @@ tql_api_test_3(_Config) ->
 	" and " ++ Record2 ++
 	" and " ++ Record3,
 
-    {ok, [{Timeline, 
-	   _Record1Timepoint}, 
-	  {Timeline, 
-	   _Record2Timepoint},
-	  {Timeline,
-	   _Record3Timepoint}]} = ?TQL_API:query(InsertQuery),
-
+    {insert, [{Timeline, 
+	       _Record1Timepoint}, 
+	      {Timeline, 
+	       _Record2Timepoint},
+	      {Timeline,
+	       _Record3Timepoint}]} = ?TQL_API:query_term(InsertQuery),
+    
     %% --- select query
     SelectQuery =
 	"select {'" ++ Key1 ++ "', '" ++ Key2 ++ "'}" ++
 	" from '" ++ Timeline ++ "' where" ++
 	" limit '1'",
     
-    [SelectResult] =  ?TQL_API:query(SelectQuery),
+    {select, [SelectResult]} =  ?TQL_API:query_term(SelectQuery),
     ?assertMatch(
        [{Key1, _}, {Key2, _}],
        ?LOOKUP(value, SelectResult)),
@@ -171,12 +171,12 @@ tql_api_test_4(_Config) ->
 	" and " ++ Record2 ++
 	" and " ++ Record3,
 
-    {ok, [{Timeline, 
-	   Record1Timepoint}, 
-	  {Timeline, 
-	   Record2Timepoint},
-	  {Timeline,
-	   Record3Timepoint}]} = ?TQL_API:query(InsertQuery),
+    {insert, [{Timeline, 
+	       Record1Timepoint}, 
+	      {Timeline, 
+	       Record2Timepoint},
+	      {Timeline,
+	       Record3Timepoint}]} = ?TQL_API:query_term(InsertQuery),
 
     %% --- select query
     SelectQuery =
@@ -186,7 +186,7 @@ tql_api_test_4(_Config) ->
 	" till '" ++ integer_to_list(Record3Timepoint) ++ "'" ++
 	" and order des and limit '100'",
 
-    SelectResult1 =  ?TQL_API:query(SelectQuery),
+    {select, SelectResult1} =  ?TQL_API:query_term(SelectQuery),
     ?assertEqual(length(SelectResult1), 3),
 
     %% --- delete query
@@ -196,10 +196,10 @@ tql_api_test_4(_Config) ->
     DeleteRecord2Query = "delete from '" ++ Timeline ++
 	"' when '" ++ integer_to_list(Record2Timepoint) ++ "'",
 
-    ok = ?TQL_API:query(DeleteRecord1Query),
-    ok = ?TQL_API:query(DeleteRecord2Query),
+    {delete, ok} = ?TQL_API:query_term(DeleteRecord1Query),
+    {delete, ok} = ?TQL_API:query_term(DeleteRecord2Query),
 
-    SelectResult2 = ?TQL_API:query(SelectQuery),
+    {select, SelectResult2} = ?TQL_API:query_term(SelectQuery),
     ?assertEqual(length(SelectResult2), 1),
 
     ok.
@@ -217,12 +217,12 @@ tql_api_test_5(_Config) ->
 	" and " ++ Record2 ++
 	" and " ++ Record3,
 
-    {ok, [{Timeline, 
-	   Record1Timepoint}, 
-	  {Timeline, 
-	   _Record2Timepoint},
-	  {Timeline,
-	   Record3Timepoint}]} = ?TQL_API:query(InsertQuery),
+    {insert, [{Timeline, 
+	       Record1Timepoint}, 
+	      {Timeline, 
+	       _Record2Timepoint},
+	      {Timeline,
+	       Record3Timepoint}]} = ?TQL_API:query_term(InsertQuery),
 
     %% --- select query
     SelectQuery =
@@ -234,16 +234,16 @@ tql_api_test_5(_Config) ->
 	" and '" ++ Key2 ++ "' == 'null'" ++
 	" and '" ++ Key3 ++ "' < '3'",
 
-    SelectResult1 =  ?TQL_API:query(SelectQuery),
+    {select, SelectResult1} =  ?TQL_API:query_term(SelectQuery),
     ?assertEqual(length(SelectResult1), 1),
 
     %% --- delete query
     DeleteRecord3Query = "delete from '" ++ Timeline ++
 	"' when '" ++ integer_to_list(Record3Timepoint) ++ "'",
     
-    ok = ?TQL_API:query(DeleteRecord3Query),
+    {delete, ok} = ?TQL_API:query_term(DeleteRecord3Query),
 
-    SelectResult2 = ?TQL_API:query(SelectQuery),
+    {select, SelectResult2} = ?TQL_API:query_term(SelectQuery),
     ?assertEqual(length(SelectResult2), 0),
 
     ok.

@@ -41,7 +41,7 @@ query_format(Query, Format) ->
     	    {semantics, {?TQL_PARSER, parse}},
     	    {evaluate, {?TQL_EVALUATOR, eval}},
 	    {format, {?TQL_FORMATTER, Format}}]),
-    
+
     Result.
    
 %%====================================================================

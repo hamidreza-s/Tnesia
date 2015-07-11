@@ -30,7 +30,7 @@ init([]) ->
 	   {tnesia_http_sup, 
 	    {tnesia_http_sup, start_link, []},
 	    transient,
-	    brutal_kill,
+	    3000,
 	    supervisor,
 	    [tnesia_sup]}
 	  ]}}.

@@ -68,20 +68,20 @@ end_per_testcase(_TestCase, Config) ->
 tnesia_tql_syntax_linter_1(_Config) ->
 
     Query = "select * from 'foo",
-    Result = ?TQL_API:query(Query),
+    Result = ?TQL_API:query_term(Query),
     ?assertEqual(
        Result,
-       "TQL Syntax Error: 'foo is illegal!"),
+       {error, "TQL Syntax Error: 'foo is illegal!"}),
 
     ok.
 
 tnesia_tql_syntax_linter_2(_Config) ->
 
     Query = "select * from 'foo' XwhereX",
-    Result = ?TQL_API:query(Query),
+    Result = ?TQL_API:query_term(Query),
     ?assertEqual(
        Result,
-       "TQL Syntax Error: X is illegal!"),
+       {error, "TQL Syntax Error: X is illegal!"}),
 
     ok.
 
@@ -91,21 +91,21 @@ tnesia_tql_syntax_linter_2(_Config) ->
 tnesia_tql_semantics_linter_1(_Config) ->
 
     Query = "select * from 'foo' where asc order",
-    Result = ?TQL_API:query(Query),
+    Result = ?TQL_API:query_term(Query),
 
     ?assertEqual(
        Result,
-       "TQL Semantics Error: there is somethig wrong around \"asc\"!"),
+       {error, "TQL Semantics Error: there is somethig wrong around \"asc\"!"}),
 
     ok.
 
 tnesia_tql_semantics_linter_2(_Config) ->
 
     Query = "select * from 'foo' where",
-    Result = ?TQL_API:query(Query),
+    Result = ?TQL_API:query_term(Query),
 
     ?assertEqual(
        Result,
-       "TQL Semantics Error: check your query!"),
+       {error, "TQL Semantics Error: check your query!"}),
 
     ok.

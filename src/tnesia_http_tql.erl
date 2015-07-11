@@ -49,7 +49,7 @@ init([]) ->
 	   {?MODULE, 
 	    {?MODULE, listen, [ListeningSock]},
 	    permanent,
-	    brutal_kill,
+	    3000,
 	    worker, 
 	    [?MODULE]}]
 	 }}.

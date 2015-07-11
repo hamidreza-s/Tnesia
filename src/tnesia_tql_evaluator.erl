@@ -15,13 +15,11 @@
 %% eval
 %%--------------------------------------------------------------------
 eval({insert, AST}) ->
-    {ok, insert(AST)};
+    {ok, {insert, insert(AST)}};
 eval({delete, AST}) ->
-    {ok, delete(AST)};
+    {ok, {delete, delete(AST)}};
 eval({select, AST}) ->
-    {ok, select(AST)};
-eval(_) ->
-    {nok, not_implemented}.
+    {ok, {select, select(AST)}}.
 
 %%====================================================================
 %% Internal Functions
@@ -54,7 +52,7 @@ do_insert(Timeline, Keys, [Values | RestValues], Results) ->
        lists:zip(Keys, Values)),
     do_insert(Timeline, Keys, RestValues, [Result | Results]);
 do_insert(_Timeline, _Keys, [], Results) ->
-    {ok, lists:reverse(Results)}.
+    lists:reverse(Results).
 
 %%--------------------------------------------------------------------
 %% delete

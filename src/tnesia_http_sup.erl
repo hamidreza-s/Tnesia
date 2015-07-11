@@ -25,13 +25,12 @@ start_link() ->
 %% init
 %%--------------------------------------------------------------------
 init([]) ->
-
     {ok, {{one_for_one, 5, 10},
 	  [
 	   {tnesia_http_tql, 
 	    {tnesia_http_tql, start_link, []},
 	    transient,
-	    brutal_kill,
+	    3000,
 	    supervisor, 
 	    [tnesia_http_tql]}]
 	 }}.
