@@ -20,7 +20,7 @@
 
 [-] TQL Documention
 
-[-] HTTP Interface
+[+] TQL HTTP Interface
 
 [-] Web Panel
 

@@ -67,7 +67,6 @@ end_per_testcase(_TestCase, Config) ->
 test_tnesia_api(_Config) ->
 
     Timeline = "test-timeline",
-    RecordPrefix = "test-record-",
     RecordsCount = 10,
     MaxDelaySec = 1000,
 
@@ -78,7 +77,7 @@ test_tnesia_api(_Config) ->
 	      timer:sleep(random:uniform(MaxDelaySec)),
 	      ?API:write(
 		Timeline, 
-		RecordPrefix ++ integer_to_list(Item))
+		[{record, Item}])
       end,
       lists:seq(1, RecordsCount)
      ),

@@ -95,7 +95,8 @@ tnesia_tql_semantics_linter_1(_Config) ->
 
     ?assertEqual(
        Result,
-       {error, "TQL Semantics Error: there is somethig wrong around \"asc\"!"}),
+       {error, 
+	"TQL Semantics Error: there is somethig wrong around \"asc\"!"}),
 
     ok.
 

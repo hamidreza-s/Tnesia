@@ -21,14 +21,20 @@
 %% write
 %%--------------------------------------------------------------------
 -spec write(tnesia_timeline(), tnesia_record()) -> 
-		   {tnesia_timeline(), tnesia_timepoint()}.
+		   {tnesia_timeline(), tnesia_timepoint()} | 
+		   tnesia_error().
 write(Timeline, Record) ->
-    Timepoint = tnesia_lib:write(
-		  #tnesia_input{
-		     timeline = Timeline,
-		     timepoint = now(),
-		     record = Record}),
-    {Timeline, Timepoint}.
+    case ?IS_PROPLISTS(Record) of
+	true ->
+	    Timepoint = tnesia_lib:write(
+			  #tnesia_input{
+			     timeline = Timeline,
+			     timepoint = now(),
+			     record = Record}),
+	    {Timeline, Timepoint};
+	false ->
+	    {error, malformed}
+    end.
 
 %%--------------------------------------------------------------------
 %% read

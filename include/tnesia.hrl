@@ -27,7 +27,14 @@
 -define(TQL_FORMATTER, tnesia_tql_formatter).
 
 %%--------------------------------------------------------------------
-%% Functions
+%% Configs
+%%--------------------------------------------------------------------
+-define(CONFIG_HTTP_TQL_PORT, 1881).
+-define(CONFIG_HTTP_TQL_IP, {127, 0, 0, 1}).
+-define(CONFIG_HTTP_TQL_LISTENERS, 5).
+
+%%--------------------------------------------------------------------
+%% Macro Functions
 %%--------------------------------------------------------------------
 -define(DBG_CT(Format, Args),
 	ct:print(default, 50, Format, Args)).
@@ -37,10 +44,13 @@
 	proplists:get_value(Key, List)).
 -define(FORMAT(Str, Arg),
 	lists:flatten(io_lib:format(Str, Arg))).
-
-%%--------------------------------------------------------------------
-%% Configs
-%%--------------------------------------------------------------------
--define(CONFIG_HTTP_TQL_PORT, 1881).
--define(CONFIG_HTTP_TQL_IP, {127, 0, 0, 1}).
--define(CONFIG_HTTP_TQL_LISTENERS, 5).
+-define(TYPE(Term),
+	tnesia_util:type_of(Term)).
+-define(TO_LIST(Term),
+	tnesia_util:to_list(Term)).
+-define(TO_BIN(Term),
+	tnesia_util:to_binary(Term)).
+-define(TRIM_STR(Direction, Count, String),
+	tnesia_util:trim_string(Direction, Count, String)).
+-define(IS_PROPLISTS(Term),
+	tnesia_util:is_proplists(Term)).

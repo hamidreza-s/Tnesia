@@ -2,7 +2,7 @@
 -type tnesia_timeline() :: any().
 -type tnesia_timepoint() :: integer().
 
--type tnesia_record() :: tnesia_todo().
+-type tnesia_record() :: [{any(), any()}].
 -type tnesia_index() :: tnesia_todo().
 
 -type tnesia_base() :: tnesia_record().
@@ -14,6 +14,8 @@
 -type tnesia_order() :: asc | desc.
 -type tnesia_limit() :: integer() | unlimited.
 -type tnesia_return() :: true | false.
+
+-type tnesia_error() :: {error, any()}.
 
 -type tnesia_filtermap_fun() :: 
 	fun((tnesia_record(), tnesia_index(), tnesia_limit()) -> 
