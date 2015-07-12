@@ -93,6 +93,8 @@ proplist_to_json_object([], State) ->
 %%--------------------------------------------------------------------
 %% list_to_json_array
 %%--------------------------------------------------------------------
+list_to_json_array([]) ->
+    "[]";
 list_to_json_array(List) ->
     list_to_json_array(List, "[").
 list_to_json_array([Head | Tail], State) ->
