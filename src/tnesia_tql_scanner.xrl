@@ -17,22 +17,22 @@ ListValues = {(\\\^.|\\.|[^\}])*}
 %%====================================================================
 Rules.
 
-select : {token, {select, TokenLine, TokenChars}}.
-all : {token, {all, TokenLine, TokenChars}}.
-from : {token, {from, TokenLine, TokenChars}}.
-since : {token, {since, TokenLine, TokenChars}}.
-till : {token, {till, TokenLine, TokenChars}}.
-order : {token, {order, TokenLine, TokenChars}}.
-limit : {token, {limit, TokenLine, TokenChars}}.
-where : {token, {where, TokenLine, TokenChars}}.
-insert : {token, {insert, TokenLine, TokenChars}}.
-into : {token, {into, TokenLine, TokenChars}}.
-delete : {token, {delete, TokenLine, TokenChars}}.
-records : {token, {records, TokenLine, TokenChars}}.
-when : {token, {'when', TokenLine, TokenChars}}.
-and : {token, {conjunctive, TokenLine, TokenChars}}.
-asc : {token, {direction, TokenLine, TokenChars}}.
-des : {token, {direction, TokenLine, TokenChars}}.
+(select|SELECT) : {token, {select, TokenLine, TokenChars}}.
+(all|ALL) : {token, {all, TokenLine, TokenChars}}.
+(from|FROM) : {token, {from, TokenLine, TokenChars}}.
+(since|SINCE) : {token, {since, TokenLine, TokenChars}}.
+(till|TILL) : {token, {till, TokenLine, TokenChars}}.
+(order|ORDER) : {token, {order, TokenLine, TokenChars}}.
+(limit|LIMIT) : {token, {limit, TokenLine, TokenChars}}.
+(where|WHERE) : {token, {where, TokenLine, TokenChars}}.
+(insert|INSERT) : {token, {insert, TokenLine, TokenChars}}.
+(into|INTO) : {token, {into, TokenLine, TokenChars}}.
+(delete|DELETE) : {token, {delete, TokenLine, TokenChars}}.
+(records|RECORDS) : {token, {records, TokenLine, TokenChars}}.
+(when|WHEN) : {token, {'when', TokenLine, TokenChars}}.
+(and|AND) : {token, {conjunctive, TokenLine, TokenChars}}.
+(asc|ASC) : {token, {direction, TokenLine, TokenChars}}.
+(des|DES) : {token, {direction, TokenLine, TokenChars}}.
 
 {SingleQuoted}+ : {token, {atom_value,
 			   TokenLine, 
