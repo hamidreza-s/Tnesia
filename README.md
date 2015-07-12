@@ -8,7 +8,7 @@ Quick Start
 
 **Installation**
 
-What you need to install Tnesia is Erlang/OPT R15 or newer.
+What you need to install Tnesia is Erlang/OTP R15 or newer.
 Clone the repo and make it before start as follows:
 
 ```bash
