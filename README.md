@@ -133,7 +133,7 @@ Result = tnesia_api:query_filtermap(
               fun(Record, _RecordIndex, _RemainingLimit) ->
                   case proplists:get_value("media", Record) of
                       "null" -> false;
-                      _ -> {true, proplists:get_value(Record)}
+                      _ -> {true, proplists:get_value("text", Record)}
                   end
               end).
 ```
@@ -155,7 +155,7 @@ ok = tnesia_api:query_foreach(
               Text = proplists:get_value("text", Record),
               case length(Text) > 20 of
                   true -> 
-                      tnesia_api:remove(Timeline, Timepoint,
+                      tnesia_api:remove(Timeline, Timepoint),
                       true;
                   _ -> false
               end
