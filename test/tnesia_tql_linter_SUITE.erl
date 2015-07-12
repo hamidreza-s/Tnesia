@@ -1,6 +1,7 @@
--module(tnesia_lib_SUITE).
+-module(tnesia_tql_linter_SUITE).
 
 -include_lib("common_test/include/ct.hrl").
+-include_lib("eunit/include/eunit.hrl").
 
 -include("tnesia.hrl").
 
@@ -62,74 +63,50 @@ end_per_testcase(_TestCase, Config) ->
 %%====================================================================
 
 %%--------------------------------------------------------------------
-%% test_tnesia_lib
+%% tnesia_tql_syntax_linter
 %%--------------------------------------------------------------------
-test_tnesia_lib(_Config) ->
+tnesia_tql_syntax_linter_1(_Config) ->
 
-    Timeline = "test-timeline",
-    RecordsCount = 10,
-    MaxDelaySec = 1000,
+    Query = "select * from 'foo",
+    Result = ?TQL_API:query_term(Query),
+    ?assertEqual(
+       Result,
+       {error, "TQL Syntax Error: 'foo is illegal!"}),
 
-    T1 = ?LIB:get_micro_timestamp(now()),
-    
-    lists:foreach(
-      fun(Item) ->
-	      timer:sleep(random:uniform(MaxDelaySec)),
-	      ?API:write(Timeline, [{record, Item}])
-      end,
-      lists:seq(1, RecordsCount)
-     ),
+    ok.
 
-    T2 = ?LIB:get_micro_timestamp(now()),
- 
-    QueryLimit = 20,
-    QueryOrder = des,
-   
-    %% --- call test
-    CallResult = 
-	?LIB:init_read_since_till(
-	   #tnesia_query{
-	      bag = Timeline,
-	      from = T1,
-	      to = T2,
-	      limit = QueryLimit,
-	      order = QueryOrder,
-	      return = true
-	     },
-	   fun(Record, RecordIndex, RemainingLimit) ->
-		   {true, {Record, RecordIndex, RemainingLimit}}
-	   end
-	  ),
-    
-    
-    if
-	QueryLimit < RecordsCount ->
-	    true = (length(CallResult) =:= QueryLimit);
-	true ->
-	    true = (length(CallResult) =:= RecordsCount)
-    end,
-    
-    %% --- cast test
-    CastResult = 
-	?LIB:init_read_since_till(
-	   #tnesia_query{
-	      bag = Timeline,
-	      from = T1,
-	      to = T2,
-	      limit = QueryLimit,
-	      order = QueryOrder,
-	      return = false
-	     },
-	   fun(Record, RecordIndex, RemainingLimit) ->
-		   {tnesia_base, {Timeline, _}, _} = Record,
-		   {tnesia_bag, {Timeline, _}, {Timeline, _}} = RecordIndex,
-		   true = (RemainingLimit =< QueryLimit),
-		   
-		   true
-	   end
-	   
-	  ),
-    
-    [] = CastResult,
-    
+tnesia_tql_syntax_linter_2(_Config) ->
+
+    Query = "select * from 'foo' XwhereX",
+    Result = ?TQL_API:query_term(Query),
+    ?assertEqual(
+       Result,
+       {error, "TQL Syntax Error: X is illegal!"}),
+
+    ok.
+
+%%--------------------------------------------------------------------
+%% tnesia_tql_semantics_linter
+%%--------------------------------------------------------------------
+tnesia_tql_semantics_linter_1(_Config) ->
+
+    Query = "select * from 'foo' where asc order",
+    Result = ?TQL_API:query_term(Query),
+
+    ?assertEqual(
+       Result,
+       {error, 
+	"TQL Semantics Error: there is somethig wrong around \"asc\"!"}),
+
+    ok.
+
+tnesia_tql_semantics_linter_2(_Config) ->
+
+    Query = "select * from 'foo' where",
+    Result = ?TQL_API:query_term(Query),
+
+    ?assertEqual(
+       Result,
+       {error, "TQL Semantics Error: check your query!"}),
+
     ok.

@@ -1,4 +1,4 @@
--module(tnesia_sup).
+-module(tnesia_http_sup).
 
 -behaviour(supervisor).
 
@@ -25,13 +25,12 @@ start_link() ->
 %% init
 %%--------------------------------------------------------------------
 init([]) ->
-    {ok, {{one_for_one, 5, 10}, 
+    {ok, {{one_for_one, 5, 10},
 	  [
-	   {tnesia_http_sup, 
-	    {tnesia_http_sup, start_link, []},
+	   {tnesia_http_tql, 
+	    {tnesia_http_tql, start_link, []},
 	    transient,
 	    3000,
-	    supervisor,
-	    [tnesia_sup]}
-	  ]}}.
-
+	    supervisor, 
+	    [tnesia_http_tql]}]
+	 }}.

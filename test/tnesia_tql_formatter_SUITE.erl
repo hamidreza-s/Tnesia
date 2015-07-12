@@ -1,6 +1,7 @@
--module(tnesia_lib_SUITE).
+-module(tnesia_tql_formatter_SUITE).
 
 -include_lib("common_test/include/ct.hrl").
+-include_lib("eunit/include/eunit.hrl").
 
 -include("tnesia.hrl").
 
@@ -32,11 +33,9 @@ all() ->
 %% init_per_suite | end_per_suite
 %%--------------------------------------------------------------------
 init_per_suite(Config) ->
-    application:start(tnesia),
     Config.
 
 end_per_suite(_Config) ->
-    application:stop(tnesia),
     ok.
 
 %%--------------------------------------------------------------------
@@ -62,74 +61,42 @@ end_per_testcase(_TestCase, Config) ->
 %%====================================================================
 
 %%--------------------------------------------------------------------
-%% test_tnesia_lib
+%% tnesia_tql_formatter_json
 %%--------------------------------------------------------------------
-test_tnesia_lib(_Config) ->
+tnesia_tql_formatter_json_1(_Config) ->
+    
+    ?assertEqual(
+       "{\"foo\":\"bar\",\"bat\":\"123\"}",
+       tnesia_tql_formatter:proplist_to_json_object(
+	 [{foo, "bar"}, {<<"bat">>, 123}])),
+    
+    ok.
 
-    Timeline = "test-timeline",
-    RecordsCount = 10,
-    MaxDelaySec = 1000,
+tnesia_tql_formatter_json_2(_Config) ->
+    
+    ?assertEqual(
+       "[foo,bar,bat,123]",
+       tnesia_tql_formatter:list_to_json_array(
+	 ["foo", <<"bar">>, bat, 123])),
+    
+    ok.
 
-    T1 = ?LIB:get_micro_timestamp(now()),
+tnesia_tql_formatter_json_3(_Config) ->
     
-    lists:foreach(
-      fun(Item) ->
-	      timer:sleep(random:uniform(MaxDelaySec)),
-	      ?API:write(Timeline, [{record, Item}])
-      end,
-      lists:seq(1, RecordsCount)
-     ),
-
-    T2 = ?LIB:get_micro_timestamp(now()),
- 
-    QueryLimit = 20,
-    QueryOrder = des,
-   
-    %% --- call test
-    CallResult = 
-	?LIB:init_read_since_till(
-	   #tnesia_query{
-	      bag = Timeline,
-	      from = T1,
-	      to = T2,
-	      limit = QueryLimit,
-	      order = QueryOrder,
-	      return = true
-	     },
-	   fun(Record, RecordIndex, RemainingLimit) ->
-		   {true, {Record, RecordIndex, RemainingLimit}}
-	   end
-	  ),
+    ?assertEqual(
+       "\"foo\"",
+       tnesia_tql_formatter:term_to_json_string(foo)),
     
+    ?assertEqual(
+       "\"bar\"",
+       tnesia_tql_formatter:term_to_json_string("bar")),
     
-    if
-	QueryLimit < RecordsCount ->
-	    true = (length(CallResult) =:= QueryLimit);
-	true ->
-	    true = (length(CallResult) =:= RecordsCount)
-    end,
+    ?assertEqual(
+       "\"bat\"",
+       tnesia_tql_formatter:term_to_json_string(<<"bat">>)),
     
-    %% --- cast test
-    CastResult = 
-	?LIB:init_read_since_till(
-	   #tnesia_query{
-	      bag = Timeline,
-	      from = T1,
-	      to = T2,
-	      limit = QueryLimit,
-	      order = QueryOrder,
-	      return = false
-	     },
-	   fun(Record, RecordIndex, RemainingLimit) ->
-		   {tnesia_base, {Timeline, _}, _} = Record,
-		   {tnesia_bag, {Timeline, _}, {Timeline, _}} = RecordIndex,
-		   true = (RemainingLimit =< QueryLimit),
-		   
-		   true
-	   end
-	   
-	  ),
-    
-    [] = CastResult,
+    ?assertEqual(
+       "\"123\"",
+       tnesia_tql_formatter:term_to_json_string(123)),
     
     ok.

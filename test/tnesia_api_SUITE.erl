@@ -1,4 +1,5 @@
 -module(tnesia_api_SUITE).
+
 -include_lib("common_test/include/ct.hrl").
 
 -include("tnesia.hrl").
@@ -66,39 +67,41 @@ end_per_testcase(_TestCase, Config) ->
 test_tnesia_api(_Config) ->
 
     Timeline = "test-timeline",
-    RecordPrefix = "test-record-",
     RecordsCount = 10,
     MaxDelaySec = 1000,
 
-    T1 = tnesia_lib:get_micro_timestamp(now()),
+    T1 = ?LIB:get_micro_timestamp(now()),
     
     lists:foreach(
       fun(Item) ->
 	      timer:sleep(random:uniform(MaxDelaySec)),
-	      tnesia_api:write(Timeline, RecordPrefix ++ integer_to_list(Item))
+	      ?API:write(
+		Timeline, 
+		[{record, Item}])
       end,
       lists:seq(1, RecordsCount)
      ),
 
-    T2 = tnesia_lib:get_micro_timestamp(now()),
+    T2 = ?LIB:get_micro_timestamp(now()),
     
     QueryLimit = 20,
     QueryOrder = des,
     
-    %% --- filtermapt test
-    FiltermapResult = tnesia_api:query_filtermap(
-			[
-			 {timeline, Timeline},
-			 {since, T1},
-			 {till, T2},
-			 {order, QueryOrder},
-			 {limit, QueryLimit}
-			],
-			fun(Record, RecordIndex, RemainingLimit) ->
-				{true, {Record, RecordIndex, RemainingLimit}}
-			end
-		       ),
-      
+    %% --- filtermap test
+    FiltermapResult = 
+	?API:query_filtermap(
+	  [
+	   {timeline, Timeline},
+	   {since, T1},
+	   {till, T2},
+	   {order, QueryOrder},
+	   {limit, QueryLimit}
+	  ],
+	  fun(Record, RecordIndex, RemainingLimit) ->
+		  {true, {Record, RecordIndex, RemainingLimit}}
+	  end
+	 ),
+    
     if
 	QueryLimit < RecordsCount ->
 	    true = (length(FiltermapResult) =:= QueryLimit);
@@ -107,23 +110,24 @@ test_tnesia_api(_Config) ->
     end,
 
     %% --- foreach test
-    ForeachResult = tnesia_api:query_foreach(
-		      [
-		       {timeline, Timeline},
-		       {since, T1},
-		       {till, T2},
-		       {order, QueryOrder},
-		       {limit, QueryLimit}
-		      ],
-		      fun(Record, RecordIndex, RemainingLimit) ->
-			      {tnesia_base, {Timeline, _}, _} = Record,
-			      {tnesia_bag, {Timeline, _}, {Timeline, _}} = RecordIndex,
-			      true = (RemainingLimit =< QueryLimit),
-
-			      true
-		      end
-		     ),
-
+    ForeachResult = 
+	?API:query_foreach(
+	  [
+	   {timeline, Timeline},
+	   {since, T1},
+	   {till, T2},
+	   {order, QueryOrder},
+	   {limit, QueryLimit}
+	  ],
+	  fun(Record, RecordIndex, RemainingLimit) ->
+		  {tnesia_base, {Timeline, _}, _} = Record,
+		  {tnesia_bag, {Timeline, _}, {Timeline, _}} = RecordIndex,
+		  true = (RemainingLimit =< QueryLimit),
+		  
+		  true
+	  end
+	 ),
+    
     ok = ForeachResult,
 
     ok.

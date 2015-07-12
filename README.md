@@ -1,222 +1,183 @@
 Tnesia
 ======
 
-Tnesia is a time-series data storage based on Mnesia. You can run time-based queries on a large amount of data, without scanning the whole set of data, in a key-value manner.
+Tnesia is a time-series data storage which lets you run time-based queries on a large amount of data, without scanning the whole set of data, and in a key-value manner. It can be used embeded inside an Erlang application, or stand-alone with HTTP interface to outside which talks in a simple query language called TQL.
 
-Goal and Theory
------
-The goal is to reduce disk seeks in order to find a time range of data values in a timeline, ascending or descending, and from or to any arbitrary points of time.
-There are few terms that can help you to understand how Tnesia stores and retrieves data, among them **Timeline**, **Timepoint** and **Timestep** are the main ones.
-
-
-```
-    +---------------------------+        
-    |                           |        
-    |     + timepoint # 01      |        
-    |                           |        
-    |                                          - timeline:
-    |     + timepoint # 02   timestep # 1        an identifier to a
-    |                                            series of chronological
-    |     + timepoint # 03      |                timepoints
-    |     + timepoint # 04      |        
-    |                           |        
-    +---------------------------+              - timepoint:
-    |                           |                a pointer to a given
-    |     + timepoint # 05      |                data value
-    |     + timepoint # 06      |        
-                                         
-timeline  + timepoint # 07   timestep # 2      - timestep:
-                                                 a partition on a
-    |     + timepoint # 08      |                timeline that spilited
-    |     + timepoint # 09      |                timepoints
-    |                           |        
-    +---------------------------+        
-    |                           |        
-    |     + timepoint # 10      |        
-    |                           |        
-    |     + timepoint # 11               
-    |     + timepoint # 12   timestep # 3
-    |                                    
-    |                           |        
-    |     + timepoint # 13      |        
-    |                           |        
-    +---------------------------+        
-    |                           |        
-    v                           v        
-```
-
-**Quick Facts**:
-
-* Each timestep can contain arbitrary number of timepoints.
-* All the orders are based on microsecond UNIX timestamp.
-* Timepoints are just a pointer to its data value which stores somewhere else.
-* Timepoints, as index, are stored on RAM to faster lookup.
-* Data values are stored on Disk to have more room for storage.
-* All seeks are **key-value**.
-* Timestep precision is configurable depends on the timepoints frequency.
-
-API
+Quick Start
 -----
 
-**Write**
+**Installation**
 
-Writes a record on a timeline.
+What you need to install Tnesia is Erlang/OPT R15 or newer.
+Clone the repo and make it before start as follows:
 
-```erlang
-tnesia_api:write(Timeline, Record) -> {Timeline, Timepoint}
+```bash
+$ git clone https://github.com/bisphone/Tnesia.git
+$ cd Tnesia
+$ make
+$ make start
+#=> Tnesia was started!
 ```
 
-**Read**
+**Stand-alone Example**
 
-Reads a record from a timeline by its timepoint.
+In stand-alone mode, what you need is an HTTP client, like curl. Then you can manipulate time-series data using TQL.
+For example you can create a timeline which is called 'tweets' and insert tweets on it in single mode:
 
-```erlang
-tnesia_api:read(Timeline, Timepoint) -> Record
+```bash
+$ curl localhost:1881 -H \
+       "Query: INSERT INTO 'tweets' {'text', 'media', 'length'}
+               RECORDS {'Hi Tnesia!', 'tnesia.png', '10'}"
+#=> [
+#=>     1436699673792910
+#=> ]
 ```
 
-**Remove**
 
-Removes a record from a timeline by its timepoint.
+Or in batch mode:
 
-```erlang
-tnesia_api:remove(Timeline, Timepoint) -> ok
+```bash
+$ curl localhost:1881 -H \
+       "Query: INSERT INTO 'tweets' {'text', 'media', 'length'}
+               RECORDS {'TQL is simple', 'null', '13'}
+               AND {'Erlang is totally fun.', 'erlang.png', '22'}
+               AND {'OH: Reactive!', 'null', '13'}"
+#=> [
+#=>     1436699709083018,
+#=>     1436699709082909,
+#=>     1436699709082768
+#=> ]
 ```
 
-**Query fetch**
+Now we can select last two tweets as follows:
 
-Queries a timeline to return records without any filttering or mapping.
-
-```erlang
-tnesia_api:query_fetch(Query) -> [Record]
+```bash
+$ curl localhost:1881 -H \
+       "Query: SELECT * FROM 'tweets'
+               WHERE SINCE '1436699673792910' TILL '1436699709083018'
+               AND LIMIT '2'
+               AND ORDER DES" 
+#=> [
+#=>     {
+#=>         "__timeline__": "tweets",
+#=>         "__timepoint__": "1436699709082909",
+#=>         "length": "22",
+#=>         "media": "erlang.png",
+#=>         "text": "Erlang is totally fun."
+#=>     },
+#=>     {
+#=>         "__timeline__": "tweets",
+#=>         "__timepoint__": "1436699709083018",
+#=>         "length": "13",
+#=>         "media": "null",
+#=>         "text": "OH: Reactive!"
+#=>     }
+#=> ]
 ```
 
-**Query filtermap**
+Also selecting tweets which don't have media property with more than 20 text length is as simple as follows:
 
-Queries a timeline to return records with filltering and mapping.
-
-```erlang
-tnesia_api:query_filtermap(Query, FiltermapFun) -> [Record]
+```bash
+$ curl localhost:1881 -H \
+       "Query: SELECT {'text', 'media'} FROM 'tweets'
+               WHERE 'media' != 'null'
+               AND 'length' > '20'"
+#=> [
+#=>     {
+#=>         "__timeline__": "tweets",
+#=>         "__timepoint__": "1436699709082909",
+#=>         "media": "erlang.png",
+#=>         "text": "Erlang is totally fun."
+#=>     }
+#=> ]
 ```
 
-**Query foreach**
+**Embeded Example**
 
-Queries a timeline and traverse on the records.
+The other way to use Tnesia is from inside an Erlang application. It is a standard OTP application, so can be included in Rebar config file.
+For example repeating above examples are as follows:
+
+Inserting record in a timeline.
 
 ```erlang
-tnesia_api:query_foreach(Query, ForeachFun) -> ok
+Timeline = "tweets",
+Tweet = [{"text", "Hi Tnesia!"}, {"media", "tnesia.png"}, {"length", "10"}],
+{Timeline, Timepoint} = tnesia_api:write(Timeline, Tweet),
 ```
 
-**Query raw**
-
-Queries a timeline deciding on the return and traversal method.
+Selecting records without filtering and mapping them.
 
 ```erlang
-tnesia_api:query_raw(Query, Return, Fun) -> [Record] | ok
-```
-
-Types
-----
-
-```erlang
-Timeline = Record = any()
-Timepoint = integer()
-Query = [{timeline, Timeline},
-         {since, Since},
-         {till, Till},
-         {order, Order},
-         {limit, Limit}]
-Since = Till = integer()
-Order = asc | des
-Limit = integer() | unlimited
-FiltermapFun = fun((RecordIndex, Record, Limit) -> {true, Record} | false)
-ForeachFun = fun((RecordIndex, Record, Limit) -> true | any)
-Fun = FiltermapFun | ForeachFun
-Return = true | false
-```
-
-Examples
-----
-
-* Writing a tweet on a user's timeline.
-
-```erlang
--define(timeline, {user}).
--define(tweet, {text, media}).
-
-Timeline = #timeline{user = "@joeerl"},
-Tweet = #tweet{text = "Do not break the laws of physics", media = null},
-{Timeline, Timepoint} = tnesia_api:write(Timeline, Tweet).
-```
-
-* Finding at most 10 tweets of a given user in a specific range of time with ascending order.
-
-```erlang
--define(timeline, {user}).
-
+Timeline = 'tweets',
 Since = tnesia_lib:get_micro_timestamp({2015, 1, 1}, {0, 0, 0}),
 Till = tnesia_lib:get_micro_timestamp(({2015, 2, 1}, {0, 0, 0}),
-Timeline = #timeline{user = "@joeerl"},
-Result = tnesia_api:query_fetch([
-				 {timeline, Timeline},
-				 {since, Since},
-				 {till, Till},
-				 {order, asc},
-				 {limit, 10}
-				]).
-
+Result = tnesia_api:query_fetch([{timeline, Timeline},
+             {since, Since},
+             {till, Till},
+             {order, asc},
+             {limit, 10}]),
 ```
 
-* Finding at most 5 attached media which a given user tweeted in a specific range of time.
+Selecting text property of records whose media property is null.
 
 ```erlang
--define(timeline, {user}).
--define(tweet, {text, media}).
-
 Since = tnesia_lib:get_micro_timestamp({2015, 1, 1}, {0, 0, 0}),
 Till = tnesia_lib:get_micro_timestamp({2015, 2, 1}, {0, 0, 0}),
-Timeline = #timeline{user = "@joeerl"},
-Result = tnesia_api:query_filtermap([
-				     {timeline, Timeline},
-				     {since, Since},
-				     {till, Till},
-				     {order, des},
-				     {limit, 10}
-				    ],
-				    fun(Record, _RecordIndex, _RemainingLimit) ->
-					    case Record#tweet.media of
-						null -> false;
-						_ -> {true, Record#tweet.media}
-					    end
-				    end).
+Timeline = "tweets",
+Result = tnesia_api:query_filtermap(
+             [{timeline, Timeline},
+              {since, Since},
+              {till, Till},
+              {order, des},
+              {limit, 10}],
+              fun(Record, _RecordIndex, _RemainingLimit) ->
+                  case proplists:get_value("media", Record) of
+                      "null" -> false;
+                      _ -> {true, proplists:get_value(Record)}
+                  end
+              end).
 ```
 
-* Removing 1000 tweets of a given user in a specific range of time whose size is more that 100 characters.
+Deleting tweets whose text length is more than 20 characters.
 
 ```erlang
--define(timeline, {user}).
--define(tweet, {text, media}).
-
-Since = tnesia_lib:get_micro_timestamp({2014, 1, 1}, {0, 0, 0})
-Till = tnesia_lib:get_micro_timestamp({2015, 1, 1}, {0, 0, 0}),
-Timeline = #timeline{user = "@joeerl"},
-ok = tnesia_api:query_foreach([
-			       {timeline, Timeline},
-			       {since, Since},
-			       {till, Till},
-			       {limit, 1000}
-			      ],
-			      fun(Record, RecordIndex, _RemainingLimit) ->
-				      {_, _, {Timeline, Timepoint}} = RecordIndex,
-				      if
-					  length(Record#tweet.text) > 100 ->
-					      tnesia_api:remove(Timeline, Timepoint),
-					      true;
-					  true  -> false
-				      end,
-			      end).
+Since = tnesia_lib:get_micro_timestamp({2015, 1, 1}, {0, 0, 0}),
+Till = tnesia_lib:get_micro_timestamp({2015, 2, 1}, {0, 0, 0}),
+Timeline = "tweets",
+ok = tnesia_api:query_foreach(
+         [{timeline, Timeline},
+          {since, Since},
+          {till, Till},
+          {order, des},
+          {limit, 10}],
+          fun(Record, RecordIndex, _RemainingLimit) ->
+              {_, _, {Timeline, Timepoint}} = RecordIndex,
+              Text = proplists:get_value("text", Record),
+              case length(Text) > 20 of
+                  true -> 
+                      tnesia_api:remove(Timeline, Timepoint,
+                      true;
+                  _ -> false
+              end
+          end).
 ```
 
-Contribute
-----
+Documentation
+-----
+
+* [Theory and Goal](#)
+* [Installation and Configuration](#)
+* [Functionality Test](#)
+* [Benchmark Test](#)
+* [Interfaces](#)
+    * [TQL API](#)
+    * [Erlang API](#)
+
+Contribution
+-----
 
 Comments, contributions and patches are greatly appreciated.
+
+License
+-----
+The MIT License (MIT).
