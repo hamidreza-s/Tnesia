@@ -1,7 +1,8 @@
 -module(tnesia).
 
 -export([
-	 start/0
+	 start/0,
+	 stop/0
 	]).
 
 -include("tnesia.hrl").
@@ -19,3 +20,10 @@ start() ->
 	_ <- lists:seq(1, ?CONFIG_HTTP_TQL_LISTENERS)],
 
     ok.
+
+%%--------------------------------------------------------------------
+%% stop
+%%--------------------------------------------------------------------
+stop() ->
+    application:stop(tnesia),
+    init:stop().
