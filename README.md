@@ -162,16 +162,181 @@ ok = tnesia_api:query_foreach(
           end).
 ```
 
-Documentation
+Theory and Goal
 -----
 
-* [Theory and Goal](#)
-* [Installation and Configuration](#)
-* [Functionality Test](#)
-* [Benchmark Test](#)
-* [Interfaces](#)
-    * [TQL API](#)
-    * [Erlang API](#)
+The goal is to reduce disk seeks in order to find a time range of data values in a timeline, ascending or descending, and from or to any arbitrary points of time.
+There are few terms that can help you to understand how Tnesia stores and retrieves data, among them **Timeline**, **Timepoint** and **Timestep** are the main ones.
+
+* Timeline: An identifier to a series of chronological timepoints.
+* Timepoint: A pointer to a given data value.
+* Timestep: A partition on a timeline that spilited timepoints
+
+```
+          TL: Timeline     TS: Timestep     *: Timepoint    
+                                                            
+    +------------------------------------------------------+
+TL     * * **  |*  ** *   |*   *  *  |  ***   * |    * ** * 
+    +------------------------------------------------------+
+        TS         TS         TS         TS         TS      
+```
+
+* Each timestep can contain arbitrary number of timepoints.
+* All the orders are based on microsecond UNIX timestamp.
+* Timepoints are just a pointer to its data value which stores somewhere else.
+* Timepoints, as index, are stored on RAM to faster lookup.
+* Data values are stored on Disk to have more room for storage.
+* All seeks are **key-value**.
+* Timestep precision is configurable depends on the timepoints frequency.
+
+Makefile
+-----
+
+The Makefile which is in root directory performs the following tasks:
+
+```shell
+# building
+$ make
+
+# functionality testing
+$ make test
+
+# benchmark testing
+$ make light_bench
+$ make normal_bench
+$ make heavy_bench
+
+# starting and etc
+$ make start
+$ make attach
+$ make stop
+$ make live
+```
+
+TQL API
+-----
+
+**Select**
+
+```sql
+SELECT * | record_keys()
+FROM timeline()
+[ WHERE
+   [ [ AND ] conditions() ]
+   [ [ AND ] SINCE datetime() TILL datetime() ]
+   [ [ AND ] ORDER order() ]
+   [ [ AND ] LIMIT limit() ] ]
+```
+
+**Insert**
+
+```sql
+INSERT INTO timeline() record_keys()
+RECORDS record_values()
+```
+
+**Delete**
+
+```sql
+DELETE FROM timeline()
+WHEN record_time()
+```
+
+TQL Types
+----
+
+```sql
+timeline() :: 'string()'
+record_keys() :: {'string()', ...}
+record_values() :: {'string()', ...}
+record_time() :: 'string()'
+datetime() :: 'integer()'
+order() :: 'asc' | 'des'
+limit() :: 'integer()'
+conditions() :: condition() AND condition()
+condition() :: 'string()' comparator() 'string()'
+comparator() :: == | != | > | >= | < | <=
+```
+
+Erlang Query API
+-----
+
+**Write**
+
+Writes a record on a timeline.
+
+```erlang
+tnesia_api:write(Timeline, Record) -> {Timeline, Timepoint}
+```
+
+**Read**
+
+Reads a record from a timeline by its timepoint.
+
+```erlang
+tnesia_api:read(Timeline, Timepoint) -> Record
+```
+
+**Remove**
+
+Removes a record from a timeline by its timepoint.
+
+```erlang
+tnesia_api:remove(Timeline, Timepoint) -> ok
+```
+
+**Query fetch**
+
+Queries a timeline to return records without any filttering or mapping.
+
+```erlang
+tnesia_api:query_fetch(Query) -> [Record]
+```
+
+**Query filtermap**
+
+Queries a timeline to return records with filltering and mapping.
+
+```erlang
+tnesia_api:query_filtermap(Query, FiltermapFun) -> [Record]
+```
+
+**Query foreach**
+
+Queries a timeline and traverse on the records.
+ 
+```erlang
+tnesia_api:query_foreach(Query, ForeachFun) -> ok
+```
+
+**Query raw**
+
+Queries a timeline deciding on the return and traversal method.
+
+```erlang
+tnesia_api:query_raw(Query, Return, Fun) -> [Record] | ok
+```
+
+Erlang Query Types
+----
+
+```erlang
+Timeline :: any()
+Record :: [{any(), any()}]
+Timepoint :: integer()
+Query :: [{timeline, Timeline},
+           {since, Since},
+           {till, Till},
+           {order, Order},
+           {limit, Limit}]
+Since = Till :: integer()
+Order :: asc | des
+Limit :: integer() | unlimited
+FiltermapFun :: fun((Record, RecordIndex, Limit) -> {true, Record} | false)
+ForeachFun :: fun((RecordIndex, Record, Limit) -> true | any())
+Fun :: FiltermapFun | ForeachFun
+Return :: true | false
+```
 
 Contribution
 -----
