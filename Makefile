@@ -57,7 +57,7 @@ light_bench: compile
 		-include $(PWD)/include \
 		-pa $(PWD)/ebin \
 		-logdir $(BENCHDIR)/logs \
-		uowqier-group light_benchmark
+		-group light_benchmark
 
 normal_bench: compile
 	@mkdir -p $(BENCHDIR)/logs
