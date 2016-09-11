@@ -1,7 +1,7 @@
 Tnesia
 ======
 
-Tnesia is a time-series data storage which lets you run time-based queries on a large amount of data, without scanning the whole set of data, and in a key-value manner. It can be used embeded inside an Erlang application, or stand-alone with HTTP interface to outside which talks in a simple query language called TQL.
+Tnesia is a time-series data storage which lets you run time-based queries on a large amount of data, without scanning the whole set of data, and in a key-value manner. It can be used embedded inside an Erlang application, or stand-alone with HTTP interface to outside which talks in a simple query language called TQL.
 
 Quick Start
 -----
